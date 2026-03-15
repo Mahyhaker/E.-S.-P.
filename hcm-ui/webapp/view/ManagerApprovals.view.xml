@@ -1,0 +1,99 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.ManagerApprovals"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page
+        id="pageManagerApprovals"
+        title="Aprovar Solicitações"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Aprovações do Gerente"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <MessageStrip
+                    text="Consulte as solicitações pendentes da equipe e aprove ou rejeite cada solicitação."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Filtro do gerente">
+                    <content>
+                        <VBox class="sapUiSmallMargin">
+                            <Label text="Gerente" />
+                            <Select
+                                id="selectManagerApproval"
+                                forceSelection="false"
+                                selectedKey=""
+                                change="onManagerChange"
+                                enabled="{= ${session>/isAdmin} }"
+                                items="{managers>/}">
+                                <core:Item
+                                    key="{managers>id}"
+                                    text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                            </Select>
+                        </VBox>
+                    </content>
+                </Panel>
+
+                <Panel
+                    headerText="Solicitações pendentes"
+                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                    <content>
+                        <List
+                            class="sapUiSmallMargin"
+                            noDataText="Nenhuma solicitação pendente encontrada."
+                            items="{pendingRequests>/}">
+                            <items>
+                                <CustomListItem>
+                                    <VBox class="sapUiSmallMargin">
+                                        <HBox justifyContent="SpaceBetween" wrap="Wrap">
+                                            <VBox>
+                                                <Title
+                                                    text="{= ${pendingRequests>employee/name} + ' - ' + ${pendingRequests>type} }"
+                                                    level="H5" />
+                                                <Text text="{= 'Período: ' + ${pendingRequests>startDate} + ' até ' + ${pendingRequests>endDate} }" />
+                                            </VBox>
+
+                                            <ObjectStatus
+                                                text="{pendingRequests>status}"
+                                                state="{= ${pendingRequests>status} === 'APPROVED' ? 'Success' : (${pendingRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                        </HBox>
+
+                                        <Text
+                                            text="{= 'Motivo: ' + ${pendingRequests>reason} }"
+                                            class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+
+                                        <HBox wrap="Wrap">
+                                            <Button
+                                                text="Aprovar"
+                                                type="Accept"
+                                                icon="sap-icon://accept"
+                                                press="onApproveRequest"
+                                                class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+
+                                            <Button
+                                                text="Rejeitar"
+                                                type="Reject"
+                                                icon="sap-icon://decline"
+                                                press="onRejectRequest"
+                                                class="sapUiTinyMarginBottom" />
+                                        </HBox>
+                                    </VBox>
+                                </CustomListItem>
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

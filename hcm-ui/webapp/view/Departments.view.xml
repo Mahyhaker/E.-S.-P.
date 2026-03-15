@@ -1,0 +1,69 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.Departments"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page
+        id="pageDepartments"
+        title="Departamentos"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <headerContent>
+            <Button
+                text="Adicionar"
+                icon="sap-icon://add"
+                type="Emphasized"
+                press="onOpenCreateDepartmentDialog"
+                visible="{session>/isAdmin}" />
+
+            <Button
+                text="Deletar"
+                icon="sap-icon://delete"
+                type="Negative"
+                press="onDeleteDepartment"
+                visible="{session>/isAdmin}" />
+        </headerContent>
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Estrutura de Departamentos"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <MessageStrip
+                    text="Consulte a estrutura organizacional cadastrada. Apenas administradores podem criar ou remover departamentos."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Departamentos cadastrados">
+                    <content>
+                        <List
+                            id="departmentList"
+                            class="sapUiSmallMargin"
+                            mode="SingleSelectLeft"
+                            noDataText="Nenhum departamento cadastrado."
+                            items="{departments>/}">
+                            <items>
+                                <ObjectListItem
+                                    title="{departments>name}"
+                                    number="{departments>id}"
+                                    numberUnit="ID">
+                                    <firstStatus>
+                                        <ObjectStatus
+                                            text="Ativo"
+                                            state="Success" />
+                                    </firstStatus>
+                                </ObjectListItem>
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

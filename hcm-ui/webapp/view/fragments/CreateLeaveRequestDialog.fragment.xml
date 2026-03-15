@@ -1,0 +1,56 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="createLeaveRequestDialog"
+        title="Nova Solicitação de Ausência">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <Label text="Data inicial" />
+                <DatePicker
+                    id="inputLeaveStartDate"
+                    valueFormat="yyyy-MM-dd"
+                    displayFormat="dd/MM/yyyy" />
+
+                <Label
+                    text="Data final"
+                    class="sapUiSmallMarginTop" />
+                <DatePicker
+                    id="inputLeaveEndDate"
+                    valueFormat="yyyy-MM-dd"
+                    displayFormat="dd/MM/yyyy" />
+
+                <Label
+                    text="Tipo"
+                    class="sapUiSmallMarginTop" />
+                <Select id="selectLeaveType">
+                    <items>
+                        <core:Item key="" text="Selecione" />
+                        <core:Item key="VACATION" text="Vacation" />
+                        <core:Item key="SICK_LEAVE" text="Sick Leave" />
+                        <core:Item key="HOME_OFFICE" text="Home Office" />
+                        <core:Item key="PERSONAL" text="Personal" />
+                    </items>
+                </Select>
+
+                <Label
+                    text="Motivo"
+                    class="sapUiSmallMarginTop" />
+                <TextArea
+                    id="inputLeaveReason"
+                    rows="4"
+                    growing="true" />
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Salvar"
+                press="onCreateLeaveRequest" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancelar"
+                press="onCloseCreateLeaveDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

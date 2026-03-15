@@ -1,0 +1,196 @@
+{
+  "_version": "1.76.0",
+  "sap.app": {
+    "id": "com.mahyhaker.hcmui.hcmui",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.19.6",
+      "toolsId": "56476d4a-2205-4b96-a915-edfc1c126ceb"
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.145.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.suite.ui.microchart": {},
+        "sap.ui.layout": {},
+         "sap.uxap": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.mahyhaker.hcmui.hcmui.i18n.i18n"
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "com.mahyhaker.hcmui.hcmui.view",
+        "async": true,
+        "viewPath": "com.mahyhaker.hcmui.hcmui.view"
+      },
+      "routes": [
+        {
+          "name": "RouteLogin",
+          "pattern": "login",
+          "target": [
+            "TargetLogin"
+          ]
+        },
+        {
+          "name": "RouteDashboard",
+          "pattern": "",
+          "target": [
+            "TargetDashboard"
+          ]
+        },
+        {
+          "name": "RouteMain",
+          "pattern": "employees",
+          "target": [
+            "TargetMain"
+          ]
+        },
+        {
+          "name": "RouteMainFiltered",
+          "pattern": "employees/{filter}",
+          "target": [
+            "TargetMain"
+          ]
+        },
+        {
+          "name": "RouteDetail",
+          "pattern": "detail/{id}",
+          "target": [
+            "TargetDetail"
+          ]
+        },
+        {
+          "name": "RouteOrgTree",
+          "pattern": "orgtree",
+          "target": [
+            "TargetOrgTree"
+          ]
+        },
+        {
+          "name": "RouteDepartments",
+          "pattern": "departments",
+          "target": [
+            "TargetDepartments"
+          ]
+        },
+        {
+          "name": "RouteLeaveRequests",
+          "pattern": "leave-requests",
+          "target": [
+            "TargetLeaveRequests"
+          ]
+        },
+        {
+          "name": "RouteManagerApprovals",
+          "pattern": "manager-approvals",
+          "target": [
+            "TargetManagerApprovals"
+          ]
+        },
+        {
+          "name": "RouteHrApprovals",
+          "pattern": "hr-approvals",
+          "target": [
+            "TargetHrApprovals"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetLogin": {
+          "id": "Login",
+          "name": "Login"
+        },
+        "TargetDashboard": {
+          "id": "Dashboard",
+          "name": "Dashboard"
+        },
+        "TargetMain": {
+          "id": "Main",
+          "name": "Main"
+        },
+        "TargetDetail": {
+          "id": "Detail",
+          "name": "Detail"
+        },
+        "TargetOrgTree": {
+          "id": "OrgTree",
+          "name": "OrgTree"
+        },
+        "TargetDepartments": {
+          "id": "Departments",
+          "name": "Departments"
+        },
+        "TargetLeaveRequests": {
+          "id": "LeaveRequests",
+          "name": "LeaveRequests"
+        },
+        "TargetManagerApprovals": {
+          "id": "ManagerApprovals",
+          "name": "ManagerApprovals"
+        },
+        "TargetHrApprovals": {
+          "id": "HrApprovals",
+          "name": "HrApprovals"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.mahyhaker.hcmui.hcmui.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

@@ -1,0 +1,84 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.LeaveRequests"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page
+        id="pageLeaveRequests"
+        title="Minhas Ausências"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <headerContent>
+            <Button
+                text="Nova Solicitação"
+                type="Emphasized"
+                icon="sap-icon://add"
+                press="onOpenCreateLeaveDialog" />
+        </headerContent>
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Gestão de Ausências"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <MessageStrip
+                    text="Funcionários e gerentes veem apenas as próprias solicitações. Administradores e RH podem consultar outros colaboradores."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Filtro de colaborador">
+                    <content>
+                        <VBox class="sapUiSmallMargin">
+                            <Label text="Funcionário" />
+                            <Select
+                                id="selectLeaveEmployee"
+                                forceSelection="false"
+                                selectedKey=""
+                                change="onEmployeeChange"
+                                enabled="{= ${session>/isAdmin} || ${session>/isHr} }"
+                                items="{employees>/}">
+                                <core:Item
+                                    key="{employees>id}"
+                                    text="{= ${employees>name} + ' - ' + ${employees>pernr} }" />
+                            </Select>
+                        </VBox>
+                    </content>
+                </Panel>
+
+                <Panel
+                    headerText="Solicitações registradas"
+                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                    <content>
+                        <List
+                            class="sapUiSmallMargin"
+                            noDataText="Nenhuma ausência encontrada."
+                            items="{leaveRequests>/}">
+                            <items>
+                                <ObjectListItem
+                                    title="{= ${leaveRequests>type} + ' - ' + ${leaveRequests>employee/name} }"
+                                    intro="{= 'Período: ' + ${leaveRequests>startDate} + ' até ' + ${leaveRequests>endDate} }"
+                                    number="{leaveRequests>status}"
+                                    numberState="{= ${leaveRequests>status} === 'APPROVED' ? 'Success' : (${leaveRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }">
+                                    <attributes>
+                                        <ObjectAttribute text="{= 'Motivo: ' + ${leaveRequests>reason} }" />
+                                    </attributes>
+                                    <firstStatus>
+                                        <ObjectStatus
+                                            text="{leaveRequests>status}"
+                                            state="{= ${leaveRequests>status} === 'APPROVED' ? 'Success' : (${leaveRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                    </firstStatus>
+                                </ObjectListItem>
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

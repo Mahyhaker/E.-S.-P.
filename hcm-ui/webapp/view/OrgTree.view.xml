@@ -1,0 +1,72 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.OrgTree"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page
+        id="pageOrgTree"
+        title="Organograma"
+        showNavButton="true"
+        navButtonPress="onNavBack"
+        busy="{tree>/busy}">
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Estrutura Organizacional"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <MessageStrip
+                    text="Visualize a hierarquia de funcionários, cargos e departamentos da organização."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Hierarquia">
+                    <content>
+                        <Tree
+                            id="orgTree"
+                            class="sapUiSmallMargin"
+                            mode="None"
+                            noDataText="Nenhuma estrutura organizacional encontrada."
+                            items="{
+                                path: 'tree>/nodes',
+                                parameters: {
+                                    arrayNames: ['children']
+                                }
+                            }">
+                            <CustomTreeItem>
+                                <HBox
+                                    width="100%"
+                                    justifyContent="SpaceBetween"
+                                    alignItems="Center"
+                                    class="sapUiTinyMarginTop sapUiTinyMarginBottom">
+
+                                    <VBox>
+                                        <Title
+                                            text="{tree>name}"
+                                            level="H5" />
+                                        <Text
+                                            text="{tree>position}" />
+                                        <ObjectStatus
+                                            text="{= ${tree>department} ? ${tree>department} : 'Sem departamento' }"
+                                            state="{= ${tree>department} ? 'Information' : 'Warning' }" />
+                                    </VBox>
+
+                                    <VBox alignItems="End">
+                                        <ObjectIdentifier
+                                            title="{tree>pernr}"
+                                            text="PERNR" />
+                                    </VBox>
+                                </HBox>
+                            </CustomTreeItem>
+                        </Tree>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,77 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.HrApprovals"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page
+        id="pageHrApprovals"
+        title="Aprovações RH"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Aprovações do RH"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <MessageStrip
+                    text="Valide as solicitações encaminhadas para a etapa de RH e conclua a aprovação final."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Solicitações aguardando RH">
+                    <content>
+                        <List
+                            class="sapUiSmallMargin"
+                            noDataText="Nenhuma solicitação pendente para o RH."
+                            items="{hrRequests>/}">
+                            <items>
+                                <CustomListItem>
+                                    <VBox class="sapUiSmallMargin">
+                                        <HBox justifyContent="SpaceBetween" wrap="Wrap">
+                                            <VBox>
+                                                <Title
+                                                    text="{= ${hrRequests>employee/name} + ' - ' + ${hrRequests>type} }"
+                                                    level="H5" />
+                                                <Text text="{= 'Período: ' + ${hrRequests>startDate} + ' até ' + ${hrRequests>endDate} }" />
+                                            </VBox>
+
+                                            <ObjectStatus
+                                                text="{hrRequests>status}"
+                                                state="{= ${hrRequests>status} === 'APPROVED' ? 'Success' : (${hrRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                        </HBox>
+
+                                        <Text
+                                            text="{= 'Motivo: ' + ${hrRequests>reason} }"
+                                            class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+
+                                        <HBox wrap="Wrap">
+                                            <Button
+                                                text="Aprovar"
+                                                type="Accept"
+                                                icon="sap-icon://accept"
+                                                press="onApproveRequest"
+                                                class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+
+                                            <Button
+                                                text="Rejeitar"
+                                                type="Reject"
+                                                icon="sap-icon://decline"
+                                                press="onRejectRequest"
+                                                class="sapUiTinyMarginBottom" />
+                                        </HBox>
+                                    </VBox>
+                                </CustomListItem>
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

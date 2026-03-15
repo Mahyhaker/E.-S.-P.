@@ -1,0 +1,51 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.App"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+>
+    <VBox
+        fitContainer="true"
+        class="appShellWrapper"
+    >
+        <OverflowToolbar class="appShellHeader">
+            <Title
+                text="HCM System"
+                level="H4"
+            />
+
+            <ToolbarSpacer />
+
+            <HBox alignItems="Center">
+                <ObjectStatus
+                    text="{session>/username}"
+                    state="Success"
+                    visible="{session>/isAuthenticated}"
+                />
+
+                <Text
+                    text="{= 'Perfil: ' + ${session>/role} }"
+                    visible="{session>/isAuthenticated}"
+                    class="sapUiTinyMarginBegin sapUiTinyMarginEnd"
+                />
+
+                <Button
+                    icon="sap-icon://home"
+                    text="Início"
+                    type="Transparent"
+                    press="onGoHome"
+                    visible="{session>/isAuthenticated}"
+                />
+
+                <Button
+                    icon="sap-icon://log"
+                    text="Sair"
+                    type="Transparent"
+                    press="onLogout"
+                    visible="{session>/isAuthenticated}"
+                />
+            </HBox>
+        </OverflowToolbar>
+
+        <App id="app" />
+    </VBox>
+</mvc:View>

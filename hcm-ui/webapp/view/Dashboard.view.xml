@@ -1,0 +1,431 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+>
+    <Page
+        id="pageDashboard"
+        title="Dashboard RH"
+        busy="{dashboard>/busy}"
+    >
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <!-- ADMIN / HR -->
+                <VBox visible="{= ${session>/isAdmin} || ${session>/isHr} }">
+                    <Title
+                        text="Visão Geral do RH"
+                        level="H2"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <MessageStrip
+                        text="Acompanhe os principais indicadores e acesse rapidamente os módulos administrativos."
+                        type="Information"
+                        showIcon="true"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <HBox
+                        wrap="Wrap"
+                        justifyContent="Start"
+                    >
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Funcionários"
+                            subheader="Total cadastrado"
+                            press="onOpenEmployees"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent
+                                    value="{dashboard>/totalEmployees}"
+                                    valueColor="Good"
+                                />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Departamentos"
+                            subheader="Estrutura ativa"
+                            press="onOpenDepartments"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent
+                                    value="{dashboard>/totalDepartments}"
+                                    valueColor="Neutral"
+                                />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Gerentes"
+                            subheader="Hierarquia"
+                            press="onOpenOrgTree"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent
+                                    value="{dashboard>/totalManagers}"
+                                    valueColor="Neutral"
+                                />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Sem gerente"
+                            subheader="Pendência estrutural"
+                            press="onOpenEmployeesWithoutManager"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent
+                                    value="{dashboard>/withoutManager}"
+                                    valueColor="{= ${dashboard>/withoutManager} > 0 ? 'Critical' : 'Good' }"
+                                />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginBottom"
+                            header="Sem departamento"
+                            subheader="Pendência estrutural"
+                            press="onOpenEmployeesWithoutDepartment"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent
+                                    value="{dashboard>/withoutDepartment}"
+                                    valueColor="{= ${dashboard>/withoutDepartment} > 0 ? 'Critical' : 'Good' }"
+                                />
+                            </TileContent>
+                        </GenericTile>
+                    </HBox>
+
+                    <Panel
+                        headerText="Atalhos administrativos"
+                        class="sapUiMediumMarginTop"
+                    >
+                        <content>
+                            <HBox
+                                wrap="Wrap"
+                                class="sapUiSmallMargin"
+                            >
+                                <Button
+                                    text="Funcionários"
+                                    icon="sap-icon://employee"
+                                    type="Emphasized"
+                                    press="onOpenEmployees"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Departamentos"
+                                    icon="sap-icon://org-chart"
+                                    press="onOpenDepartments"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Organograma"
+                                    icon="sap-icon://tree"
+                                    press="onOpenOrgTree"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Minhas Ausências"
+                                    icon="sap-icon://calendar"
+                                    press="onOpenLeaveRequests"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Aprovar Solicitações"
+                                    icon="sap-icon://task"
+                                    press="onOpenManagerApprovals"
+                                    visible="{= ${session>/isAdmin} || ${session>/isManager} }"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Aprovações RH"
+                                    icon="sap-icon://group"
+                                    press="onOpenHrApprovals"
+                                    class="sapUiTinyMarginBottom"
+                                />
+                            </HBox>
+                        </content>
+                    </Panel>
+
+                    <HBox
+                        wrap="Wrap"
+                        class="sapUiMediumMarginTop"
+                    >
+                        <VBox
+                            width="48%"
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                        >
+                            <Panel headerText="Funcionários por departamento">
+                                <content>
+                                    <List
+                                        class="sapUiSmallMargin"
+                                        noDataText="Sem dados de departamentos."
+                                        items="{dashboard>/departmentChartData}"
+                                    >
+                                        <items>
+                                            <ObjectListItem
+                                                title="{dashboard>department}"
+                                                number="{dashboard>count}"
+                                                numberUnit="funcionários"
+                                            >
+                                                <firstStatus>
+                                                    <ObjectStatus
+                                                        text="{= ${dashboard>count} + ' ativos na área' }"
+                                                        state="Information"
+                                                    />
+                                                </firstStatus>
+                                            </ObjectListItem>
+                                        </items>
+                                    </List>
+                                </content>
+                            </Panel>
+                        </VBox>
+
+                        <VBox
+                            width="48%"
+                            class="sapUiTinyMarginBottom"
+                        >
+                            <Panel headerText="Pendências estruturais">
+                                <content>
+                                    <List class="sapUiSmallMargin">
+                                        <items>
+                                            <ObjectListItem
+                                                title="Funcionários sem departamento"
+                                                number="{dashboard>/withoutDepartment}"
+                                                numberState="{= ${dashboard>/withoutDepartment} > 0 ? 'Warning' : 'Success' }"
+                                            />
+                                            <ObjectListItem
+                                                title="Funcionários sem gerente"
+                                                number="{dashboard>/withoutManager}"
+                                                numberState="{= ${dashboard>/withoutManager} > 0 ? 'Warning' : 'Success' }"
+                                            />
+                                        </items>
+                                    </List>
+                                </content>
+                            </Panel>
+                        </VBox>
+                    </HBox>
+
+                    <Panel
+                        headerText="Funcionários sem departamento"
+                        class="sapUiMediumMarginTop"
+                    >
+                        <content>
+                            <List
+                                class="sapUiSmallMargin"
+                                noDataText="Todos os funcionários estão vinculados a departamentos."
+                                items="{dashboard>/employeesWithoutDepartment}"
+                            >
+                                <items>
+                                    <ObjectListItem
+                                        title="{dashboard>name}"
+                                        intro="{dashboard>position}"
+                                        number="{dashboard>pernr}"
+                                        numberUnit="PERNR"
+                                        type="Navigation"
+                                        press="onOpenEmployeeDetail"
+                                    >
+                                        <firstStatus>
+                                            <ObjectStatus
+                                                text="Sem departamento"
+                                                state="Warning"
+                                            />
+                                        </firstStatus>
+                                    </ObjectListItem>
+                                </items>
+                            </List>
+                        </content>
+                    </Panel>
+
+                    <Panel
+                        headerText="Últimos funcionários cadastrados"
+                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
+                    >
+                        <content>
+                            <List
+                                class="sapUiSmallMargin"
+                                noDataText="Nenhum funcionário cadastrado."
+                                items="{dashboard>/recentEmployees}"
+                            >
+                                <items>
+                                    <ObjectListItem
+                                        title="{dashboard>name}"
+                                        intro="{dashboard>position}"
+                                        number="{dashboard>pernr}"
+                                        numberUnit="PERNR"
+                                        type="Navigation"
+                                        press="onOpenEmployeeDetail"
+                                    >
+                                        <attributes>
+                                            <ObjectAttribute
+                                                text="{= ${dashboard>department/name} ? 'Departamento: ' + ${dashboard>department/name} : 'Departamento: Sem departamento' }"
+                                            />
+                                        </attributes>
+                                    </ObjectListItem>
+                                </items>
+                            </List>
+                        </content>
+                    </Panel>
+                </VBox>
+
+                <!-- MANAGER -->
+                <VBox visible="{session>/isManager}">
+                    <Title
+                        text="Painel do Gerente"
+                        level="H2"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <MessageStrip
+                        text="Gerencie aprovações da equipe e acompanhe sua estrutura."
+                        type="Information"
+                        showIcon="true"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <HBox
+                        wrap="Wrap"
+                        justifyContent="Start"
+                    >
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Minhas Ausências"
+                            subheader="Solicitações pessoais"
+                            press="onOpenLeaveRequests"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent value="Acessar" />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                            header="Aprovar Solicitações"
+                            subheader="Equipe"
+                            press="onOpenManagerApprovals"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent value="Acessar" />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile
+                            class="sapUiTinyMarginBottom"
+                            header="Organograma"
+                            subheader="Estrutura"
+                            press="onOpenOrgTree"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent value="Ver" />
+                            </TileContent>
+                        </GenericTile>
+                    </HBox>
+
+                    <Panel
+                        headerText="Ações do gerente"
+                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
+                    >
+                        <content>
+                            <HBox
+                                wrap="Wrap"
+                                class="sapUiSmallMargin"
+                            >
+                                <Button
+                                    text="Minhas Ausências"
+                                    icon="sap-icon://calendar"
+                                    type="Emphasized"
+                                    press="onOpenLeaveRequests"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Aprovar Solicitações"
+                                    icon="sap-icon://task"
+                                    press="onOpenManagerApprovals"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                                />
+
+                                <Button
+                                    text="Organograma"
+                                    icon="sap-icon://tree"
+                                    press="onOpenOrgTree"
+                                    class="sapUiTinyMarginBottom"
+                                />
+                            </HBox>
+                        </content>
+                    </Panel>
+                </VBox>
+
+                <!-- EMPLOYEE -->
+                <VBox visible="{session>/isEmployee}">
+                    <Title
+                        text="Área do Colaborador"
+                        level="H2"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <MessageStrip
+                        text="Consulte e acompanhe suas solicitações de ausência."
+                        type="Information"
+                        showIcon="true"
+                        class="sapUiSmallMarginBottom"
+                    />
+
+                    <HBox
+                        wrap="Wrap"
+                        justifyContent="Start"
+                    >
+                        <GenericTile
+                            class="sapUiTinyMarginBottom"
+                            header="Minhas Ausências"
+                            subheader="Solicitações registradas"
+                            press="onOpenLeaveRequests"
+                            frameType="OneByHalf"
+                        >
+                            <TileContent>
+                                <NumericContent value="Acessar" />
+                            </TileContent>
+                        </GenericTile>
+                    </HBox>
+
+                    <Panel
+                        headerText="Acesso rápido"
+                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
+                    >
+                        <content>
+                            <HBox
+                                wrap="Wrap"
+                                class="sapUiSmallMargin"
+                            >
+                                <Button
+                                    text="Minhas Ausências"
+                                    icon="sap-icon://calendar"
+                                    type="Emphasized"
+                                    press="onOpenLeaveRequests"
+                                    class="sapUiTinyMarginBottom"
+                                />
+                            </HBox>
+                        </content>
+                    </Panel>
+                </VBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,133 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page
+        id="pageEmployees"
+        title="Funcionários"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <headerContent>
+            <Button
+                text="Adicionar Funcionário"
+                icon="sap-icon://add"
+                press="onOpenCreateDialog"
+                visible="{session>/isAdmin}" />
+
+            <Button
+                text="Acesso"
+                icon="sap-icon://key-user-settings"
+                press="onOpenAccessDialog"
+                visible="{session>/isAdmin}" />
+
+            <Button
+                text="Editar"
+                icon="sap-icon://edit"
+                press="onOpenEditDialog"
+                visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
+
+            <Button
+                text="Detalhes"
+                icon="sap-icon://detail-view"
+                press="onOpenDetail"
+                visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
+
+            <Button
+                text="Deletar"
+                icon="sap-icon://delete"
+                type="Negative"
+                press="onDeleteEmployee"
+                visible="{session>/isAdmin}" />
+        </headerContent>
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="Gestão de Funcionários"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel headerText="Filtros e navegação">
+                    <content>
+                        <VBox class="sapUiSmallMargin">
+                            <SearchField
+                                id="searchEmployee"
+                                placeholder="Buscar por nome ou PERNR"
+                                liveChange="onFilterEmployees" />
+
+                            <Select
+                                id="filterDepartment"
+                                class="sapUiSmallMarginTop"
+                                forceSelection="false"
+                                selectedKey=""
+                                change="onFilterEmployees"
+                                items="{departments>/}">
+                                <items>
+                                    <core:Item
+                                        key=""
+                                        text="Todos os departamentos" />
+                                    <core:Item
+                                        key="{departments>id}"
+                                        text="{departments>name}" />
+                                </items>
+                            </Select>
+
+                            <HBox
+                                class="sapUiSmallMarginTop"
+                                wrap="Wrap">
+                                <Button
+                                    text="Departamentos"
+                                    icon="sap-icon://org-chart"
+                                    press="onOpenDepartments"
+                                    visible="{= ${session>/isAdmin} || ${session>/isHr} }"
+                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+
+                                <Button
+                                    text="Organograma"
+                                    icon="sap-icon://tree"
+                                    press="onOpenOrgTree"
+                                    visible="{= ${session>/isAdmin} || ${session>/isHr} || ${session>/isManager} }"
+                                    class="sapUiTinyMarginBottom" />
+                            </HBox>
+                        </VBox>
+                    </content>
+                </Panel>
+
+                <Panel
+                    headerText="Lista de Funcionários"
+                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                    <content>
+                        <List
+                            id="employeeList"
+                            class="sapUiSmallMargin"
+                            mode="SingleSelectLeft"
+                            noDataText="Nenhum funcionário encontrado."
+                            items="{employees>/}">
+                            <items>
+                                <ObjectListItem
+                                    title="{employees>name}"
+                                    number="{employees>pernr}"
+                                    numberUnit="PERNR"
+                                    type="Active"
+                                    press="onOpenDetail"
+                                    intro="{employees>position}">
+                                    <attributes>
+                                        <ObjectAttribute
+                                            text="{= ${employees>department/name} ? 'Departamento: ' + ${employees>department/name} : 'Departamento: Sem departamento' }" />
+                                        <ObjectAttribute
+                                            text="{= ${employees>manager/name} ? 'Gerente: ' + ${employees>manager/name} : 'Gerente: Sem gerente' }" />
+                                    </attributes>
+                                </ObjectListItem>
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

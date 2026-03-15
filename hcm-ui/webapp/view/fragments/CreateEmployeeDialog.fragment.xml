@@ -1,0 +1,87 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="createEmployeeDialog"
+        title="Novo Funcionário">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <Label text="Nome" />
+                <Input id="inputName" />
+
+                <Label
+                    text="Cargo"
+                    class="sapUiSmallMarginTop" />
+                <Input id="inputPosition" />
+
+                <Label
+                    text="Salário"
+                    class="sapUiSmallMarginTop" />
+                <Input
+                    id="inputSalary"
+                    type="Number" />
+
+                <Label
+                    text="Departamento"
+                    class="sapUiSmallMarginTop" />
+                <ComboBox
+                    id="selectDepartment"
+                    selectedKey=""
+                    placeholder="Sem departamento"
+                    items="{departments>/}">
+                    <core:Item
+                        key="{departments>id}"
+                        text="{departments>name}" />
+                </ComboBox>
+
+                <Label
+                    text="Gerente"
+                    class="sapUiSmallMarginTop" />
+                <ComboBox
+                    id="selectManager"
+                    selectedKey=""
+                    placeholder="Sem gerente"
+                    items="{managers>/}">
+                    <core:Item
+                        key="{managers>id}"
+                        text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                </ComboBox>
+
+                <Label
+                    text="Username"
+                    class="sapUiSmallMarginTop" />
+                <Input id="inputUsername" />
+
+                <Label
+                    text="Senha"
+                    class="sapUiSmallMarginTop" />
+                <Input
+                    id="inputPassword"
+                    type="Password" />
+
+                <Label
+                    text="Role"
+                    class="sapUiSmallMarginTop" />
+                <Select id="selectRole">
+                    <items>
+                        <core:Item key="" text="Selecione" />
+                        <core:Item key="EMPLOYEE" text="EMPLOYEE" />
+                        <core:Item key="MANAGER" text="MANAGER" />
+                        <core:Item key="HR" text="HR" />
+                        <core:Item key="ADMIN" text="ADMIN" />
+                    </items>
+                </Select>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Salvar"
+                press="onCreateEmployee" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancelar"
+                press="onCloseCreateDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

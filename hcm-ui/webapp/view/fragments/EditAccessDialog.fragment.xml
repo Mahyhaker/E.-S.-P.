@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="editAccessDialog"
+        title="Gerenciar Acesso">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <Label text="Role" />
+                <Select id="accessSelectRole">
+                    <items>
+                        <core:Item key="" text="Manter atual" />
+                        <core:Item key="EMPLOYEE" text="EMPLOYEE" />
+                        <core:Item key="MANAGER" text="MANAGER" />
+                        <core:Item key="HR" text="HR" />
+                        <core:Item key="ADMIN" text="ADMIN" />
+                    </items>
+                </Select>
+
+                <Label text="Status" class="sapUiSmallMarginTop" />
+                <Select id="accessSelectActive">
+                    <items>
+                        <core:Item key="" text="Manter atual" />
+                        <core:Item key="true" text="Ativo" />
+                        <core:Item key="false" text="Inativo" />
+                    </items>
+                </Select>
+
+                <Label text="Nova senha" class="sapUiSmallMarginTop" />
+                <Input
+                    id="accessInputPassword"
+                    type="Password"
+                    placeholder="Deixe vazio para não alterar" />
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Salvar"
+                press="onSaveAccess" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancelar"
+                press="onCloseAccessDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

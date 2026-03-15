@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="createDepartmentDialog"
+        title="Novo Departamento">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <MessageStrip
+                    text="Informe o nome do novo departamento."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Label text="Nome do departamento" />
+                <Input
+                    id="inputDepartmentName"
+                    placeholder="Ex.: Recursos Humanos" />
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Salvar"
+                type="Emphasized"
+                press="onCreateDepartment" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancelar"
+                press="onCloseCreateDepartmentDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

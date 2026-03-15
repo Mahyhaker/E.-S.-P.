@@ -1,0 +1,48 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="editEmployeeDialog"
+        title="Editar Funcionário">
+        <content>
+            <VBox class="sapUiMediumMargin">
+                <Label text="Nome" />
+                <Input id="editInputName" />
+
+                <Label text="Cargo" class="sapUiSmallMarginTop" />
+                <Input id="editInputPosition" />
+
+                <Label text="Salário" class="sapUiSmallMarginTop" />
+                <Input id="editInputSalary" type="Number" />
+
+                <Label text="Departamento" class="sapUiSmallMarginTop" />
+                <Select
+                    id="editSelectDepartment"
+                    items="{departments>/}">
+                    <items>
+                        <core:Item
+                            key="{departments>id}"
+                            text="{departments>name}" />
+                    </items>
+                </Select>
+
+                <Label text="Gerente" class="sapUiSmallMarginTop" />
+                <ComboBox
+                    id="editSelectManager"
+                    selectedKey=""
+                    placeholder="Sem gerente"
+                    items="{managers>/}">
+                    <core:Item
+                        key="{managers>id}"
+                        text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                </ComboBox>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button text="Salvar" press="onUpdateEmployee" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancelar" press="onCloseEditDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

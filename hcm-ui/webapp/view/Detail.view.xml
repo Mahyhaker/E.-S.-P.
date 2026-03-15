@@ -1,0 +1,85 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.Detail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout">
+
+    <Page
+        id="pageDetail"
+        title="Perfil do Funcionário"
+        showNavButton="true"
+        navButtonPress="onNavBack">
+
+        <content>
+            <VBox class="sapUiMediumMargin">
+
+                <Title
+                    text="{detail>/name}"
+                    level="H2"
+                    class="sapUiSmallMarginBottom" />
+
+                <ObjectStatus
+                    text="{detail>/position}"
+                    state="Information"
+                    class="sapUiSmallMarginBottom" />
+
+                <Panel
+                    headerText="Resumo"
+                    class="sapUiMediumMarginBottom">
+                    <content>
+                        <l:Grid
+                            defaultSpan="L6 M6 S12"
+                            hSpacing="2"
+                            vSpacing="1"
+                            class="sapUiSmallMargin">
+
+                            <VBox>
+                                <Label text="Nome" />
+                                <Text text="{detail>/name}" />
+                            </VBox>
+
+                            <VBox>
+                                <Label text="Cargo" />
+                                <Text text="{detail>/position}" />
+                            </VBox>
+
+                            <VBox>
+                                <Label text="PERNR" />
+                                <Text text="{detail>/pernr}" />
+                            </VBox>
+
+                            <VBox>
+                                <Label text="Salário" />
+                                <Text text="{detail>/salary}" />
+                            </VBox>
+                        </l:Grid>
+                    </content>
+                </Panel>
+
+                <Panel
+                    headerText="Organização"
+                    class="sapUiMediumMarginBottom">
+                    <content>
+                        <l:Grid
+                            defaultSpan="L6 M6 S12"
+                            hSpacing="2"
+                            vSpacing="1"
+                            class="sapUiSmallMargin">
+
+                            <VBox>
+                                <Label text="Departamento" />
+                                <Text text="{= ${detail>/department/name} ? ${detail>/department/name} : 'Sem departamento' }" />
+                            </VBox>
+
+                            <VBox>
+                                <Label text="Gerente" />
+                                <Text text="{= ${detail>/manager/name} ? ${detail>/manager/name} : 'Sem gerente' }" />
+                            </VBox>
+                        </l:Grid>
+                    </content>
+                </Panel>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

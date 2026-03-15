@@ -1,0 +1,86 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.Login"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form">
+
+    <Page
+        id="pageLogin"
+        showHeader="false"
+        class="sapUiContentPadding">
+
+        <content>
+            <FlexBox
+                width="100%"
+                height="100%"
+                alignItems="Center"
+                justifyContent="Center">
+
+                <VBox
+                    width="100%"
+                    class="loginWrapper">
+
+                    <Panel class="loginPanel">
+                        <content>
+                            <VBox class="sapUiLargeMargin">
+
+                                <VBox class="sapUiSmallMarginBottom">
+                                    <Title
+                                        text="HCM System"
+                                        level="H1" />
+                                    <Text text="Acesse o sistema com seu usuário corporativo" />
+                                </VBox>
+
+                                <MessageStrip
+                                    text="Use o acesso criado pelo administrador."
+                                    type="Information"
+                                    showIcon="true"
+                                    class="sapUiSmallMarginBottom" />
+
+                                <f:SimpleForm
+                                    editable="true"
+                                    layout="ResponsiveGridLayout"
+                                    labelSpanXL="12"
+                                    labelSpanL="12"
+                                    labelSpanM="12"
+                                    labelSpanS="12"
+                                    adjustLabelSpan="false"
+                                    emptySpanXL="0"
+                                    emptySpanL="0"
+                                    emptySpanM="0"
+                                    emptySpanS="0"
+                                    columnsXL="1"
+                                    columnsL="1"
+                                    columnsM="1">
+
+                                    <Label text="Usuário" />
+                                    <Input
+                                        value="{login>/username}"
+                                        placeholder="Digite seu usuário"
+                                        submit="onLogin" />
+
+                                    <Label text="Senha" />
+                                    <Input
+                                        value="{login>/password}"
+                                        type="Password"
+                                        placeholder="Digite sua senha"
+                                        submit="onLogin" />
+                                </f:SimpleForm>
+
+                                <Button
+                                    text="Entrar"
+                                    type="Emphasized"
+                                    press="onLogin"
+                                    busy="{login>/busy}"
+                                    enabled="{= !${login>/busy} }"
+                                    class="sapUiMediumMarginTop" />
+
+                            </VBox>
+                        </content>
+                    </Panel>
+
+                </VBox>
+            </FlexBox>
+        </content>
+    </Page>
+</mvc:View>
