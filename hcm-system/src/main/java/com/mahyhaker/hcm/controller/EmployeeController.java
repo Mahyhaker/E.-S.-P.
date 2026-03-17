@@ -96,19 +96,7 @@ public class EmployeeController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        Employee employee = repository.findById(id).orElseThrow();
-
-        List<Employee> subordinates = repository.findAll()
-                .stream()
-                .filter(e -> e.getManager() != null && e.getManager().getId().equals(id))
-                .toList();
-
-        for (Employee subordinate : subordinates) {
-            subordinate.setManager(null);
-            repository.save(subordinate);
-        }
-
-        repository.delete(employee);
+        service.deleteEmployee(id);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")

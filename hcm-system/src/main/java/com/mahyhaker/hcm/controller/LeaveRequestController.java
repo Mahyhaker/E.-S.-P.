@@ -56,13 +56,13 @@ public class LeaveRequestController {
         return service.getPendingForHr();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','HR')")
     @PutMapping("/{id}/approve")
     public LeaveRequest approve(@PathVariable Long id) {
         return service.approve(id);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','HR')")
     @PutMapping("/{id}/reject")
     public LeaveRequest reject(@PathVariable Long id) {
         return service.reject(id);

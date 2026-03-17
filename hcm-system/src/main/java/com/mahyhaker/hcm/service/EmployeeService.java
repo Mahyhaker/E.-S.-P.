@@ -13,10 +13,12 @@ import com.mahyhaker.hcm.dto.EmployeeTreeNode;
 import com.mahyhaker.hcm.dto.EmployeeWithUserResponse;
 import com.mahyhaker.hcm.model.Department;
 import com.mahyhaker.hcm.model.Employee;
+import com.mahyhaker.hcm.model.LeaveRequest;
 import com.mahyhaker.hcm.model.Role;
 import com.mahyhaker.hcm.model.User;
 import com.mahyhaker.hcm.repository.DepartmentRepository;
 import com.mahyhaker.hcm.repository.EmployeeRepository;
+import com.mahyhaker.hcm.repository.LeaveRequestRepository;
 import com.mahyhaker.hcm.repository.UserRepository;
 
 @Service
@@ -26,15 +28,18 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LeaveRequestRepository leaveRequestRepository;
 
     public EmployeeService(EmployeeRepository employeeRepository,
                            DepartmentRepository departmentRepository,
                            UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           LeaveRequestRepository leaveRequestRepository) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.leaveRequestRepository = leaveRequestRepository;
     }
 
     public EmployeeWithUserResponse createEmployeeWithUser(CreateEmployeeWithUserRequest request) {
@@ -111,6 +116,34 @@ public class EmployeeService {
                 savedUser.getUsername(),
                 savedUser.getRole().name()
         );
+    }
+
+    public void deleteEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado."));
+
+        List<Employee> subordinates = employeeRepository.findAll()
+                .stream()
+                .filter(e -> e.getManager() != null && e.getManager().getId().equals(id))
+                .toList();
+
+        for (Employee subordinate : subordinates) {
+            subordinate.setManager(null);
+            employeeRepository.save(subordinate);
+        }
+
+        userRepository.findByEmployeeId(id).ifPresent(userRepository::delete);
+
+        List<LeaveRequest> leaveRequests = leaveRequestRepository.findAll()
+                .stream()
+                .filter(lr -> lr.getEmployee() != null && lr.getEmployee().getId().equals(id))
+                .toList();
+
+        if (!leaveRequests.isEmpty()) {
+            leaveRequestRepository.deleteAll(leaveRequests);
+        }
+
+        employeeRepository.delete(employee);
     }
 
     public List<EmployeeTreeNode> getOrganizationTree() {
