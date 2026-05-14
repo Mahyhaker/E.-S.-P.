@@ -4,7 +4,7 @@ sap.ui.define([
 ], function (Controller, JSONModel) {
     "use strict";
 
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = window.location.hostname === "localhost" && window.location.port && window.location.port !== "80" ? "http://localhost:8080" : "";
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.Dashboard", {
         onInit: function () {
