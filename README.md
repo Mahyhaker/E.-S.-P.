@@ -1,9 +1,10 @@
-# HCM System — Human Capital Management
+# HCM System - Human Capital Management
 
-![Java](https://img.shields.io/badge/Java-17-orange)
-![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-green)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.x-green)
 ![SAP UI5](https://img.shields.io/badge/SAP-UI5-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
 ![JWT](https://img.shields.io/badge/Auth-JWT-red)
 
 Sistema de **Gestão de Capital Humano (HCM)** desenvolvido com **Spring Boot + PostgreSQL no backend** e **SAP UI5 (Fiori) no frontend**.
@@ -23,14 +24,26 @@ O sistema permite gerenciar:
 
 O sistema foi desenvolvido com arquitetura **Backend + Frontend desacoplados**.
 
-```
+```text
 SAP UI5 (Frontend)
-        ↓
+        |
 REST API
-        ↓
+        |
 Spring Boot (Backend)
-        ↓
+        |
 PostgreSQL Database
+```
+
+Em produção com Docker, o frontend é servido por **Nginx**, que também encaminha as chamadas HTTP para o backend.
+
+```text
+Browser
+  |
+Nginx (Frontend)
+  |
+Spring Boot API
+  |
+PostgreSQL
 ```
 
 ---
@@ -39,8 +52,8 @@ PostgreSQL Database
 
 ## Backend
 
-* Java 17
-* Spring Boot
+* Java 21
+* Spring Boot 4
 * Spring Security
 * JWT Authentication
 * JPA / Hibernate
@@ -52,10 +65,17 @@ PostgreSQL Database
 * SAP Fiori Design
 * JavaScript
 * JSONModel
+* Nginx para servir a build em produção
 
 ## Banco de Dados
 
 * PostgreSQL
+
+## Infraestrutura
+
+* Docker
+* Docker Compose
+* AWS EC2
 
 ---
 
@@ -143,8 +163,8 @@ Permite:
 
 O sistema gera automaticamente a árvore organizacional baseada na relação:
 
-```
-Employee → Manager
+```text
+Employee -> Manager
 ```
 
 ---
@@ -153,11 +173,11 @@ Employee → Manager
 
 Fluxo completo:
 
-```
+```text
 Employee cria solicitação
-        ↓
+        |
 Manager aprova ou rejeita
-        ↓
+        |
 HR visualiza e gerencia
 ```
 
@@ -165,57 +185,64 @@ HR visualiza e gerencia
 
 # Estrutura do Projeto
 
+```text
+hcm-system/
+├── docker-compose.yml
+├── .env.example
+├── DEPLOY_AWS_EC2.md
+├── hcm-system/       # Backend Spring Boot
+└── hcm-ui/           # Frontend SAP UI5
+```
+
 ## Backend
 
-```
-src/main/java/com/mahyhaker/hcm
+```text
+hcm-system/src/main/java/com/mahyhaker/hcm
 
 config
- ├─ SecurityConfig
- ├─ JwtAuthenticationFilter
- └─ DataInitializer
+├── SecurityConfig
+├── JwtAuthenticationFilter
+└── DataInitializer
 
 controller
- ├─ AuthController
- ├─ EmployeeController
- ├─ UserController
- └─ LeaveRequestController
+├── AuthController
+├── EmployeeController
+├── UserController
+└── LeaveRequestController
 
 service
- ├─ EmployeeService
- ├─ UserService
- └─ JwtService
+├── EmployeeService
+├── UserService
+└── JwtService
 
 repository
- ├─ EmployeeRepository
- ├─ UserRepository
- ├─ DepartmentRepository
- └─ LeaveRequestRepository
+├── EmployeeRepository
+├── UserRepository
+├── DepartmentRepository
+└── LeaveRequestRepository
 
 model
- ├─ Employee
- ├─ User
- ├─ Department
- └─ LeaveRequest
+├── Employee
+├── User
+├── Department
+└── LeaveRequest
 ```
-
----
 
 ## Frontend
 
-```
-webapp
+```text
+hcm-ui/webapp
 
 controller
- ├─ Login.controller.js
- ├─ Dashboard.controller.js
- ├─ Main.controller.js
- ├─ Detail.controller.js
- ├─ Departments.controller.js
- ├─ OrgTree.controller.js
- ├─ LeaveRequests.controller.js
- ├─ ManagerApprovals.controller.js
- └─ HrApprovals.controller.js
+├── Login.controller.js
+├── Dashboard.controller.js
+├── Main.controller.js
+├── Detail.controller.js
+├── Departments.controller.js
+├── OrgTree.controller.js
+├── LeaveRequests.controller.js
+├── ManagerApprovals.controller.js
+└── HrApprovals.controller.js
 
 view
 fragments
@@ -229,18 +256,20 @@ manifest.json
 
 O sistema utiliza **JWT (JSON Web Token)**.
 
-Após login o backend retorna:
+Após login, o backend retorna:
 
-```
-token
-username
-role
-employeeId
+```json
+{
+  "token": "...",
+  "username": "admin",
+  "role": "ADMIN",
+  "employeeId": 1
+}
 ```
 
-O token é enviado em todas as requisições:
+O token é enviado nas requisições autenticadas:
 
-```
+```text
 Authorization: Bearer TOKEN
 ```
 
@@ -250,7 +279,7 @@ Authorization: Bearer TOKEN
 
 Ao iniciar o sistema, um usuário administrador é criado automaticamente.
 
-```
+```text
 username: admin
 password: 123
 role: ADMIN
@@ -258,74 +287,165 @@ role: ADMIN
 
 ---
 
-# Instalação
+# Executando com Docker
 
-## 1 Clonar o projeto
+## 1. Clonar o projeto
 
+```bash
+git clone https://github.com/Mahyhaker/E.-S.-P..git
+cd E.-S.-P.
 ```
-git clone https://github.com/seuusuario/hcm-system.git
+
+## 2. Criar arquivo de ambiente
+
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` e troque a senha do PostgreSQL:
+
+```env
+POSTGRES_DB=hcm_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=sua_senha_forte
+
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=false
+```
+
+## 3. Subir a aplicação
+
+```bash
+docker compose up -d --build
+```
+
+Frontend:
+
+```text
+http://localhost
+```
+
+Backend:
+
+```text
+http://localhost:8080
+```
+
+## 4. Comandos úteis
+
+```bash
+docker compose ps
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f db
+docker compose down
+```
+
+Para parar e apagar o volume local do banco:
+
+```bash
+docker compose down -v
 ```
 
 ---
 
-## 2 Configurar PostgreSQL
+# Executando sem Docker
 
-Criar banco:
+## 1. Configurar PostgreSQL
 
-```
-CREATE DATABASE hcm;
-```
+Crie um banco local:
 
-Editar:
-
-```
-application.properties
+```sql
+CREATE DATABASE hcm_db;
 ```
 
-```
-spring.datasource.url=jdbc:postgresql://localhost:5432/hcm
-spring.datasource.username=postgres
-spring.datasource.password=senha
+O backend usa variáveis de ambiente, mas também possui valores padrão em:
+
+```text
+hcm-system/src/main/resources/application.properties
 ```
 
----
+## 2. Rodar o backend
 
-## 3 Rodar o backend
-
+```bash
+cd hcm-system
+./mvnw spring-boot:run
 ```
-mvn spring-boot:run
+
+No Windows:
+
+```powershell
+cd hcm-system
+.\mvnw.cmd spring-boot:run
 ```
 
 Servidor:
 
-```
+```text
 http://localhost:8080
 ```
 
----
+## 3. Rodar o frontend
 
-## 4 Rodar o frontend
-
-Com UI5 tooling:
-
-```
-ui5 serve
+```bash
+cd hcm-ui
+npm install
+npm run start-local
 ```
 
 Aplicação:
 
-```
+```text
 http://localhost:8081
 ```
 
 ---
 
-# Reset do Banco (Ambiente de Desenvolvimento)
+# Deploy na AWS EC2
+
+Este projeto já possui Dockerfile para backend, Dockerfile para frontend e `docker-compose.yml`.
+
+Resumo do deploy:
+
+1. Criar uma instância EC2 Ubuntu.
+2. Liberar no Security Group:
+   * Porta `22` para SSH, de preferência apenas para seu IP.
+   * Porta `80` para HTTP.
+3. Instalar Docker e Docker Compose na EC2.
+4. Clonar o repositório.
+5. Criar o `.env`.
+6. Rodar `docker compose up -d --build`.
+
+Exemplo dentro da EC2:
+
+```bash
+git clone https://github.com/Mahyhaker/E.-S.-P..git
+cd E.-S.-P.
+cp .env.example .env
+nano .env
+docker compose up -d --build
+```
+
+Depois acesse:
+
+```text
+http://IP_PUBLICO_DA_EC2
+```
+
+Mais detalhes estão no arquivo:
+
+```text
+DEPLOY_AWS_EC2.md
+```
+
+---
+
+# Reset do Banco
 
 Para limpar o banco e reiniciar IDs:
 
-```
-TRUNCATE TABLE 
+```sql
+TRUNCATE TABLE
     leave_request,
     users,
     employee,
@@ -333,7 +453,7 @@ TRUNCATE TABLE
 RESTART IDENTITY CASCADE;
 ```
 
-Após reiniciar o sistema o **admin será criado automaticamente**.
+Após reiniciar o backend, o usuário `admin` será criado automaticamente.
 
 ---
 
@@ -343,8 +463,11 @@ O sistema utiliza:
 
 * Spring Security
 * JWT Authentication
-* Controle de acesso por Role
+* Controle de acesso por role
 * Proteção de endpoints
+* Variáveis de ambiente para configurações sensíveis em Docker/EC2
+
+O arquivo `.env` não deve ser versionado. Use `.env.example` como modelo.
 
 ---
 
@@ -355,6 +478,8 @@ O sistema utiliza:
 * Notificações
 * Dashboard analítico
 * Integração com SAP SuccessFactors
+* HTTPS com domínio próprio na AWS
+* Pipeline CI/CD para deploy automático
 
 ---
 
