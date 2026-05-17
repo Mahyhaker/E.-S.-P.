@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.model.Employee;
 import com.mahyhaker.hcm.model.LeaveRequest;
 import com.mahyhaker.hcm.model.LeaveStatus;
@@ -35,7 +36,7 @@ public class LeaveRequestService {
         }
 
         Employee employee = employeeRepository.findById(leaveRequest.getEmployee().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
 
         boolean hasOverlap = leaveRepository
                 .existsByEmployeeIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
@@ -72,7 +73,7 @@ public class LeaveRequestService {
 
     public LeaveRequest approve(Long id) {
         LeaveRequest leaveRequest = leaveRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Solicitação não encontrada."));
+                .orElseThrow(() -> new NotFoundException("Solicitacao nao encontrada."));
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Somente solicitações pendentes podem ser aprovadas.");
@@ -95,7 +96,7 @@ public class LeaveRequestService {
 
     public LeaveRequest reject(Long id) {
         LeaveRequest leaveRequest = leaveRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Solicitação não encontrada."));
+                .orElseThrow(() -> new NotFoundException("Solicitacao nao encontrada."));
 
         if (leaveRequest.getStatus() != LeaveStatus.PENDING) {
             throw new IllegalArgumentException("Somente solicitações pendentes podem ser rejeitadas.");

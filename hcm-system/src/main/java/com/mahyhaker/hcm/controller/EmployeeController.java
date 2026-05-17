@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mahyhaker.hcm.dto.CreateEmployeeWithUserRequest;
 import com.mahyhaker.hcm.dto.EmployeeWithUserResponse;
+import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.model.Department;
 import com.mahyhaker.hcm.model.Employee;
 import com.mahyhaker.hcm.repository.DepartmentRepository;
@@ -47,19 +48,21 @@ public class EmployeeController {
     @PreAuthorize("hasAnyRole('ADMIN','HR')")
     @GetMapping("/{id}")
     public Employee getById(@PathVariable Long id) {
-        return repository.findById(id).orElseThrow();
+        return repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/with-user")
-    public EmployeeWithUserResponse createWithUser(@RequestBody CreateEmployeeWithUserRequest request) {
+    public EmployeeWithUserResponse createWithUser(@Valid @RequestBody CreateEmployeeWithUserRequest request) {
         return service.createEmployeeWithUser(request);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','HR')")
     @PutMapping("/{id}")
     public Employee update(@PathVariable Long id, @Valid @RequestBody Employee employee) {
-        Employee existing = repository.findById(id).orElseThrow();
+        Employee existing = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
 
         existing.setName(employee.getName());
         existing.setPosition(employee.getPosition());
@@ -68,14 +71,15 @@ public class EmployeeController {
         if (employee.getDepartment() != null) {
             Department department = departmentRepository
                     .findById(employee.getDepartment().getId())
-                    .orElseThrow();
+                    .orElseThrow(() -> new NotFoundException("Departamento nao encontrado."));
             existing.setDepartment(department);
         } else {
             existing.setDepartment(null);
         }
 
         if (employee.getManager() != null) {
-            Employee manager = repository.findById(employee.getManager().getId()).orElseThrow();
+            Employee manager = repository.findById(employee.getManager().getId())
+                    .orElseThrow(() -> new NotFoundException("Gerente nao encontrado."));
 
             if (manager.getId().equals(id)) {
                 throw new IllegalArgumentException("Um funcionário não pode ser gerente de si mesmo.");

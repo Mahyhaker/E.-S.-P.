@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.model.Department;
 import com.mahyhaker.hcm.repository.DepartmentRepository;
 import com.mahyhaker.hcm.repository.EmployeeRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/departments")
@@ -31,7 +34,7 @@ public class DepartmentController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public Department create(@RequestBody Department department) {
+    public Department create(@Valid @RequestBody Department department) {
         return repository.save(department);
     }
 
@@ -45,6 +48,10 @@ public class DepartmentController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("Departamento nao encontrado.");
+        }
+
         boolean hasEmployees = employeeRepository.findAll()
                 .stream()
                 .anyMatch(emp -> emp.getDepartment() != null && emp.getDepartment().getId().equals(id));

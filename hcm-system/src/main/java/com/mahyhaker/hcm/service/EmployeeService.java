@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.mahyhaker.hcm.dto.CreateEmployeeWithUserRequest;
 import com.mahyhaker.hcm.dto.EmployeeTreeNode;
 import com.mahyhaker.hcm.dto.EmployeeWithUserResponse;
+import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.model.Department;
 import com.mahyhaker.hcm.model.Employee;
 import com.mahyhaker.hcm.model.LeaveRequest;
@@ -87,14 +88,14 @@ public class EmployeeService {
         if (request.getDepartmentId() != null) {
             Department department = departmentRepository
                     .findById(request.getDepartmentId())
-                    .orElseThrow(() -> new IllegalArgumentException("Departamento não encontrado."));
+                    .orElseThrow(() -> new NotFoundException("Departamento nao encontrado."));
             employee.setDepartment(department);
         }
 
         if (request.getManagerId() != null) {
             Employee manager = employeeRepository
                     .findById(request.getManagerId())
-                    .orElseThrow(() -> new IllegalArgumentException("Gerente não encontrado."));
+                    .orElseThrow(() -> new NotFoundException("Gerente nao encontrado."));
             employee.setManager(manager);
         }
 
@@ -120,7 +121,7 @@ public class EmployeeService {
 
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Funcionário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
 
         List<Employee> subordinates = employeeRepository.findAll()
                 .stream()

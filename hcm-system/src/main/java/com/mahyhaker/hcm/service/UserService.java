@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.mahyhaker.hcm.dto.UpdateUserRequest;
 import com.mahyhaker.hcm.dto.UserResponse;
+import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.model.Role;
 import com.mahyhaker.hcm.model.User;
 import com.mahyhaker.hcm.repository.UserRepository;
@@ -32,7 +33,7 @@ public class UserService {
 
     public UserResponse updateByEmployeeId(Long employeeId, UpdateUserRequest request) {
         User user = userRepository.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado para este funcionário."));
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado para este funcionario."));
 
         if (request.getRole() != null && !request.getRole().isBlank()) {
             try {
