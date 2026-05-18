@@ -8,22 +8,31 @@ sap.ui.define([
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.Dashboard", {
         onInit: function () {
-            this.getView().setModel(new JSONModel({
+            this.getView().setModel(new JSONModel(this._emptyDashboard()), "dashboard");
+
+            this.getOwnerComponent()
+                .getRouter()
+                .getRoute("RouteDashboard")
+                .attachPatternMatched(this.onRouteMatched, this);
+        },
+
+        _emptyDashboard: function () {
+            return {
                 busy: false,
                 totalEmployees: 0,
                 totalDepartments: 0,
                 totalManagers: 0,
                 withoutManager: 0,
                 withoutDepartment: 0,
+                pendingLeaveRequests: 0,
+                approvedLeaveRequests: 0,
+                rejectedLeaveRequests: 0,
+                upcomingLeaveRequests: [],
+                profile: null,
                 employeesWithoutDepartment: [],
                 departmentChartData: [],
                 recentEmployees: []
-            }), "dashboard");
-
-            this.getOwnerComponent()
-                .getRouter()
-                .getRoute("RouteDashboard")
-                .attachPatternMatched(this.onRouteMatched, this);
+            };
         },
 
         _getAuthHeaders: function () {
@@ -41,6 +50,11 @@ sap.ui.define([
             this.getOwnerComponent().getRouter().navTo("RouteLogin", {}, true);
         },
 
+        _safeJson: async function (response) {
+            const text = await response.text();
+            return text ? JSON.parse(text) : null;
+        },
+
         onRouteMatched: function () {
             const oSession = this.getOwnerComponent().getModel("session");
 
@@ -49,26 +63,7 @@ sap.ui.define([
                 return;
             }
 
-            const bIsAdmin = oSession.getProperty("/isAdmin");
-            const bIsHr = oSession.getProperty("/isHr");
-
-            if (bIsAdmin || bIsHr) {
-                this.loadDashboard();
-                return;
-            }
-
-            const oModel = this.getView().getModel("dashboard");
-            oModel.setData({
-                busy: false,
-                totalEmployees: 0,
-                totalDepartments: 0,
-                totalManagers: 0,
-                withoutManager: 0,
-                withoutDepartment: 0,
-                employeesWithoutDepartment: [],
-                departmentChartData: [],
-                recentEmployees: []
-            });
+            this.loadDashboard();
         },
 
         loadDashboard: async function () {
@@ -78,73 +73,66 @@ sap.ui.define([
             try {
                 const oHeaders = this._getAuthHeaders();
 
-                const [employeesResponse, departmentsResponse] = await Promise.all([
-                    fetch(`${BASE_URL}/employees`, {
-                        headers: oHeaders
-                    }),
-                    fetch(`${BASE_URL}/departments`, {
-                        headers: oHeaders
-                    })
-                ]);
+                const oSession = this.getOwnerComponent().getModel("session");
+                const bIsAdmin = oSession.getProperty("/isAdmin");
+                const bIsHr = oSession.getProperty("/isHr");
+                const aRequests = [
+                    fetch(`${BASE_URL}/dashboard/summary`, { headers: oHeaders }),
+                    fetch(`${BASE_URL}/users/me`, { headers: oHeaders })
+                ];
 
-                if (employeesResponse.status === 401 || departmentsResponse.status === 401) {
+                if (bIsAdmin || bIsHr) {
+                    aRequests.push(fetch(`${BASE_URL}/employees`, { headers: oHeaders }));
+                }
+
+                const responses = await Promise.all(aRequests);
+                const summaryResponse = responses[0];
+                const profileResponse = responses[1];
+                const employeesResponse = responses[2] || null;
+
+                if (responses.some(response => response.status === 401)) {
                     this._handleUnauthorized();
                     return;
                 }
 
-                if (!employeesResponse.ok) {
-                    throw new Error("Erro ao carregar funcionários.");
+                if (!summaryResponse.ok) {
+                    const data = await this._safeJson(summaryResponse);
+                    throw new Error((data && data.message) || "Erro ao carregar indicadores.");
                 }
 
-                if (!departmentsResponse.ok) {
-                    throw new Error("Erro ao carregar departamentos.");
+                if (employeesResponse && !employeesResponse.ok) {
+                    const data = await this._safeJson(employeesResponse);
+                    throw new Error((data && data.message) || "Erro ao carregar funcionarios.");
                 }
 
-                const employees = await employeesResponse.json();
-                const departments = await departmentsResponse.json();
-
-                const totalEmployees = employees.length;
-                const totalDepartments = departments.length;
-                const totalManagers = employees.filter(emp =>
-                    employees.some(other => other.manager && other.manager.id === emp.id)
-                ).length;
-                const withoutManager = employees.filter(emp => !emp.manager).length;
-                const employeesWithoutDepartment = employees.filter(emp => !emp.department);
-                const withoutDepartment = employeesWithoutDepartment.length;
-
+                const summary = await summaryResponse.json();
+                const employees = employeesResponse ? await employeesResponse.json() : [];
+                const profile = profileResponse.ok ? await this._safeJson(profileResponse) : null;
                 const departmentCountMap = {};
 
                 employees.forEach(emp => {
-                    const deptName = emp.department && emp.department.name
-                        ? emp.department.name
-                        : "Sem departamento";
-
-                    if (!departmentCountMap[deptName]) {
-                        departmentCountMap[deptName] = 0;
-                    }
-
-                    departmentCountMap[deptName]++;
+                    const deptName = emp.department && emp.department.name ? emp.department.name : "Sem departamento";
+                    departmentCountMap[deptName] = (departmentCountMap[deptName] || 0) + 1;
                 });
-
-                const departmentChartData = Object.keys(departmentCountMap).map(name => ({
-                    department: name,
-                    count: departmentCountMap[name]
-                }));
-
-                const recentEmployees = [...employees]
-                    .sort((a, b) => b.id - a.id)
-                    .slice(0, 5);
 
                 oModel.setData({
                     busy: false,
-                    totalEmployees,
-                    totalDepartments,
-                    totalManagers,
-                    withoutManager,
-                    withoutDepartment,
-                    employeesWithoutDepartment,
-                    departmentChartData,
-                    recentEmployees
+                    totalEmployees: summary.totalEmployees,
+                    totalDepartments: summary.totalDepartments,
+                    totalManagers: summary.totalManagers,
+                    withoutManager: summary.employeesWithoutManager,
+                    withoutDepartment: summary.employeesWithoutDepartment,
+                    pendingLeaveRequests: summary.pendingLeaveRequests,
+                    approvedLeaveRequests: summary.approvedLeaveRequests,
+                    rejectedLeaveRequests: summary.rejectedLeaveRequests,
+                    upcomingLeaveRequests: summary.upcomingLeaveRequests || [],
+                    profile,
+                    employeesWithoutDepartment: employees.filter(emp => !emp.department),
+                    departmentChartData: Object.keys(departmentCountMap).map(name => ({
+                        department: name,
+                        count: departmentCountMap[name]
+                    })),
+                    recentEmployees: [...employees].sort((a, b) => b.id - a.id).slice(0, 5)
                 });
             } catch (error) {
                 oModel.setProperty("/busy", false);
@@ -157,15 +145,11 @@ sap.ui.define([
         },
 
         onOpenEmployeesWithoutDepartment: function () {
-            this.getOwnerComponent().getRouter().navTo("RouteMainFiltered", {
-                filter: "withoutDepartment"
-            });
+            this.getOwnerComponent().getRouter().navTo("RouteMainFiltered", { filter: "withoutDepartment" });
         },
 
         onOpenEmployeesWithoutManager: function () {
-            this.getOwnerComponent().getRouter().navTo("RouteMainFiltered", {
-                filter: "withoutManager"
-            });
+            this.getOwnerComponent().getRouter().navTo("RouteMainFiltered", { filter: "withoutManager" });
         },
 
         onOpenDepartments: function () {
@@ -180,6 +164,18 @@ sap.ui.define([
             this.getOwnerComponent().getRouter().navTo("RouteLeaveRequests");
         },
 
+        onOpenPendingLeaveRequests: function () {
+            this.getOwnerComponent().getRouter().navTo("RouteLeaveRequestsStatus", { status: "PENDING" });
+        },
+
+        onOpenApprovedLeaveRequests: function () {
+            this.getOwnerComponent().getRouter().navTo("RouteLeaveRequestsStatus", { status: "APPROVED" });
+        },
+
+        onOpenRejectedLeaveRequests: function () {
+            this.getOwnerComponent().getRouter().navTo("RouteLeaveRequestsStatus", { status: "REJECTED" });
+        },
+
         onOpenManagerApprovals: function () {
             this.getOwnerComponent().getRouter().navTo("RouteManagerApprovals");
         },
@@ -190,10 +186,7 @@ sap.ui.define([
 
         onOpenEmployeeDetail: function (oEvent) {
             const oEmployee = oEvent.getSource().getBindingContext("dashboard").getObject();
-
-            this.getOwnerComponent().getRouter().navTo("RouteDetail", {
-                id: oEmployee.id
-            });
+            this.getOwnerComponent().getRouter().navTo("RouteDetail", { id: oEmployee.id });
         }
     });
 });

@@ -6,14 +6,16 @@
 
     <Page
         id="pageEmployees"
-        title="Funcionários"
+        title="Funcionarios"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        class="employeesPage">
 
         <headerContent>
             <Button
-                text="Adicionar Funcionário"
+                text="Adicionar"
                 icon="sap-icon://add"
+                type="Emphasized"
                 press="onOpenCreateDialog"
                 visible="{session>/isAdmin}" />
 
@@ -21,18 +23,21 @@
                 text="Acesso"
                 icon="sap-icon://key-user-settings"
                 press="onOpenAccessDialog"
+                enabled="{= !!${employees>/selectedEmployee} }"
                 visible="{session>/isAdmin}" />
 
             <Button
                 text="Editar"
                 icon="sap-icon://edit"
                 press="onOpenEditDialog"
+                enabled="{= !!${employees>/selectedEmployee} }"
                 visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
 
             <Button
                 text="Detalhes"
                 icon="sap-icon://detail-view"
                 press="onOpenDetail"
+                enabled="{= !!${employees>/selectedEmployee} }"
                 visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
 
             <Button
@@ -40,87 +45,124 @@
                 icon="sap-icon://delete"
                 type="Negative"
                 press="onDeleteEmployee"
+                enabled="{= !!${employees>/selectedEmployee} }"
                 visible="{session>/isAdmin}" />
         </headerContent>
 
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="employeesContent">
 
                 <Title
-                    text="Gestão de Funcionários"
+                    text="Gestao de Funcionarios"
                     level="H2"
-                    class="sapUiSmallMarginBottom" />
+                    class="employeesTitle" />
 
-                <Panel headerText="Filtros e navegação">
+                <MessageStrip
+                    text="Consulte colaboradores, vinculos, departamento, gerente e pendencias estruturais."
+                    type="Information"
+                    showIcon="true"
+                    class="employeesStrip" />
+
+                <HBox wrap="Wrap" class="employeesStats">
+                    <GenericTile class="employeesStatTile" header="Funcionarios" subheader="Total cadastrado" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{employees>/totalEmployees}" icon="sap-icon://employee" valueColor="Good" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeesStatTile" header="Gerentes" subheader="Com equipe direta" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{employees>/managers}" icon="sap-icon://manager" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeesStatTile" header="Sem departamento" subheader="Pendencia" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{employees>/withoutDepartment}" icon="sap-icon://alert" valueColor="{= ${employees>/withoutDepartment} > 0 ? 'Critical' : 'Good' }" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeesStatTile" header="Sem gerente" subheader="Pendencia" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{employees>/withoutManager}" icon="sap-icon://person-placeholder" valueColor="{= ${employees>/withoutManager} > 0 ? 'Critical' : 'Good' }" />
+                        </TileContent>
+                    </GenericTile>
+                </HBox>
+
+                <Panel headerText="Funcionarios cadastrados" class="employeesPanel">
                     <content>
-                        <VBox class="sapUiSmallMargin">
+                        <OverflowToolbar class="employeesToolbar">
                             <SearchField
                                 id="searchEmployee"
-                                placeholder="Buscar por nome ou PERNR"
-                                liveChange="onFilterEmployees" />
+                                width="22rem"
+                                placeholder="Buscar por nome, PERNR, cargo, departamento ou gerente"
+                                liveChange="onFilterEmployees"
+                                search="onFilterEmployees" />
 
                             <Select
                                 id="filterDepartment"
-                                class="sapUiSmallMarginTop"
+                                width="16rem"
                                 forceSelection="false"
                                 selectedKey=""
                                 change="onFilterEmployees"
                                 items="{departments>/}">
                                 <items>
-                                    <core:Item
-                                        key=""
-                                        text="Todos os departamentos" />
-                                    <core:Item
-                                        key="{departments>id}"
-                                        text="{departments>name}" />
+                                    <core:Item key="" text="Todos os departamentos" />
+                                    <core:Item key="{departments>id}" text="{departments>name}" />
                                 </items>
                             </Select>
 
-                            <HBox
-                                class="sapUiSmallMarginTop"
-                                wrap="Wrap">
-                                <Button
-                                    text="Departamentos"
-                                    icon="sap-icon://org-chart"
-                                    press="onOpenDepartments"
-                                    visible="{= ${session>/isAdmin} || ${session>/isHr} }"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
+                            <Button text="Limpar" icon="sap-icon://clear-filter" press="onClearFilters" />
+                            <ToolbarSpacer />
+                            <ObjectStatus
+                                text="{= ${employees>/filteredCount} + ' exibidos' }"
+                                state="Information" />
+                        </OverflowToolbar>
 
-                                <Button
-                                    text="Organograma"
-                                    icon="sap-icon://tree"
-                                    press="onOpenOrgTree"
-                                    visible="{= ${session>/isAdmin} || ${session>/isHr} || ${session>/isManager} }"
-                                    class="sapUiTinyMarginBottom" />
-                            </HBox>
-                        </VBox>
-                    </content>
-                </Panel>
+                        <HBox wrap="Wrap" class="employeesActions">
+                            <Button
+                                text="Departamentos"
+                                icon="sap-icon://org-chart"
+                                press="onOpenDepartments"
+                                visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
 
-                <Panel
-                    headerText="Lista de Funcionários"
-                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
-                    <content>
+                            <Button
+                                text="Organograma"
+                                icon="sap-icon://tree"
+                                press="onOpenOrgTree"
+                                visible="{= ${session>/isAdmin} || ${session>/isHr} || ${session>/isManager} }" />
+                        </HBox>
+
                         <List
                             id="employeeList"
-                            class="sapUiSmallMargin"
+                            class="employeesList"
                             mode="SingleSelectLeft"
-                            noDataText="Nenhum funcionário encontrado."
-                            items="{employees>/}">
+                            selectionChange="onEmployeeSelectionChange"
+                            noDataText="{employees>/noDataText}"
+                            items="{employees>/filteredItems}">
                             <items>
                                 <ObjectListItem
                                     title="{employees>name}"
+                                    intro="{employees>position}"
                                     number="{employees>pernr}"
                                     numberUnit="PERNR"
+                                    numberState="Information"
                                     type="Active"
-                                    press="onOpenDetail"
-                                    intro="{employees>position}">
+                                    press="onOpenDetail">
                                     <attributes>
-                                        <ObjectAttribute
-                                            text="{= ${employees>department/name} ? 'Departamento: ' + ${employees>department/name} : 'Departamento: Sem departamento' }" />
-                                        <ObjectAttribute
-                                            text="{= ${employees>manager/name} ? 'Gerente: ' + ${employees>manager/name} : 'Gerente: Sem gerente' }" />
+                                        <ObjectAttribute text="{= ${employees>department/name} ? 'Departamento: ' + ${employees>department/name} : 'Departamento: Sem departamento' }" />
+                                        <ObjectAttribute text="{= ${employees>manager/name} ? 'Gerente: ' + ${employees>manager/name} : 'Gerente: Sem gerente' }" />
+                                        <ObjectAttribute text="{path: 'employees>salary', formatter: '.formatMoney'}" />
                                     </attributes>
+                                    <firstStatus>
+                                        <ObjectStatus
+                                            icon="sap-icon://org-chart"
+                                            text="{= ${employees>department/name} || 'Sem departamento' }"
+                                            state="{= ${employees>department/name} ? 'Information' : 'Warning' }" />
+                                    </firstStatus>
+                                    <secondStatus>
+                                        <ObjectStatus
+                                            icon="sap-icon://manager"
+                                            text="{= ${employees>manager/name} || 'Sem gerente' }"
+                                            state="{= ${employees>manager/name} ? 'Success' : 'Warning' }" />
+                                    </secondStatus>
                                 </ObjectListItem>
                             </items>
                         </List>

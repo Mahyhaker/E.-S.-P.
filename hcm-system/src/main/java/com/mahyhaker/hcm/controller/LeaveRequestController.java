@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mahyhaker.hcm.dto.RejectLeaveRequest;
 import com.mahyhaker.hcm.model.LeaveRequest;
 import com.mahyhaker.hcm.service.LeaveRequestService;
 
@@ -44,7 +45,13 @@ public class LeaveRequestController {
         return service.getByEmployee(employeeId);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")
+    @GetMapping("/manager/{managerId}")
+    public List<LeaveRequest> getByManager(@PathVariable Long managerId) {
+        return service.getByManager(managerId);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")
     @GetMapping("/pending/manager/{managerId}")
     public List<LeaveRequest> getPendingByManager(@PathVariable Long managerId) {
         return service.getPendingByManager(managerId);
@@ -64,7 +71,7 @@ public class LeaveRequestController {
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','HR')")
     @PutMapping("/{id}/reject")
-    public LeaveRequest reject(@PathVariable Long id) {
-        return service.reject(id);
+    public LeaveRequest reject(@PathVariable Long id, @RequestBody(required = false) RejectLeaveRequest request) {
+        return service.reject(id, request != null ? request.getReason() : null);
     }
 }

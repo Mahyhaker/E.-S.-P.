@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.mahyhaker.hcm.dto.CurrentUserResponse;
 import com.mahyhaker.hcm.dto.UpdateUserRequest;
 import com.mahyhaker.hcm.dto.UserResponse;
 import com.mahyhaker.hcm.exception.NotFoundException;
+import com.mahyhaker.hcm.model.Employee;
 import com.mahyhaker.hcm.model.Role;
 import com.mahyhaker.hcm.model.User;
 import com.mahyhaker.hcm.repository.UserRepository;
@@ -29,6 +31,40 @@ public class UserService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public CurrentUserResponse getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado."));
+        Employee employee = user.getEmployee();
+
+        return new CurrentUserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getRole().name(),
+                user.isActive(),
+                employee != null ? employee.getId() : null,
+                employee != null ? employee.getName() : null,
+                employee != null ? employee.getPosition() : null,
+                employee != null && employee.getDepartment() != null ? employee.getDepartment().getName() : null,
+                employee != null && employee.getManager() != null ? employee.getManager().getName() : null
+        );
+    }
+
+    public void updateOwnPassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado."));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Senha atual invalida.");
+        }
+
+        if (newPassword == null || newPassword.isBlank() || newPassword.length() < 6) {
+            throw new IllegalArgumentException("Nova senha deve ter pelo menos 6 caracteres.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     public UserResponse updateByEmployeeId(Long employeeId, UpdateUserRequest request) {

@@ -3,66 +3,45 @@
     xmlns:core="sap.ui.core">
     <Dialog
         id="createEmployeeDialog"
-        title="Novo Funcionário">
+        title="Novo Funcionario"
+        contentWidth="32rem">
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="sapUiMediumMargin employeeDialogContent">
                 <Label text="Nome" />
-                <Input id="inputName" />
+                <Input id="inputName" placeholder="Nome completo" />
 
-                <Label
-                    text="Cargo"
-                    class="sapUiSmallMarginTop" />
-                <Input id="inputPosition" />
+                <Label text="Cargo" class="sapUiSmallMarginTop" />
+                <Input id="inputPosition" placeholder="Ex.: Desenvolvedor, Analista, Gerente" />
 
-                <Label
-                    text="Salário"
-                    class="sapUiSmallMarginTop" />
-                <Input
-                    id="inputSalary"
-                    type="Number" />
+                <Label text="Salario" class="sapUiSmallMarginTop" />
+                <Input id="inputSalary" type="Number" placeholder="0.00" />
 
-                <Label
-                    text="Departamento"
-                    class="sapUiSmallMarginTop" />
+                <Label text="Departamento" class="sapUiSmallMarginTop" />
                 <ComboBox
                     id="selectDepartment"
                     selectedKey=""
                     placeholder="Sem departamento"
                     items="{departments>/}">
-                    <core:Item
-                        key="{departments>id}"
-                        text="{departments>name}" />
+                    <core:Item key="{departments>id}" text="{departments>name}" />
                 </ComboBox>
 
-                <Label
-                    text="Gerente"
-                    class="sapUiSmallMarginTop" />
+                <Label text="Gerente" class="sapUiSmallMarginTop" />
                 <ComboBox
                     id="selectManager"
                     selectedKey=""
                     placeholder="Sem gerente"
                     items="{managers>/}">
-                    <core:Item
-                        key="{managers>id}"
-                        text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                    <core:Item key="{managers>id}" text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
                 </ComboBox>
 
-                <Label
-                    text="Username"
-                    class="sapUiSmallMarginTop" />
-                <Input id="inputUsername" />
+                <Label text="Usuario" class="sapUiSmallMarginTop" />
+                <Input id="inputUsername" placeholder="Login do colaborador" />
 
-                <Label
-                    text="Senha"
-                    class="sapUiSmallMarginTop" />
-                <Input
-                    id="inputPassword"
-                    type="Password" />
+                <Label text="Senha" class="sapUiSmallMarginTop" />
+                <Input id="inputPassword" type="Password" />
 
-                <Label
-                    text="Role"
-                    class="sapUiSmallMarginTop" />
-                <Select id="selectRole">
+                <Label text="Perfil" class="sapUiSmallMarginTop" />
+                <Select id="selectRole" selectedKey="">
                     <items>
                         <core:Item key="" text="Selecione" />
                         <core:Item key="EMPLOYEE" text="EMPLOYEE" />
@@ -74,14 +53,10 @@
             </VBox>
         </content>
         <beginButton>
-            <Button
-                text="Salvar"
-                press="onCreateEmployee" />
+            <Button text="Salvar" type="Emphasized" press="onCreateEmployee" />
         </beginButton>
         <endButton>
-            <Button
-                text="Cancelar"
-                press="onCloseCreateDialog" />
+            <Button text="Cancelar" press="onCloseCreateDialog" />
         </endButton>
     </Dialog>
 </core:FragmentDefinition>

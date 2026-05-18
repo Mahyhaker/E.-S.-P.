@@ -1,9 +1,10 @@
 .sapMPage {
     background-color: #f7f9fb;
+    padding-top: 0.5rem;
 }
 
 .sapMPanel {
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
 }
 
 .sapMGTHdrTxt,
@@ -23,38 +24,18 @@
     background: #ffffff;
 }
 
+.sapMPanel .sapMPanelContent {
+    padding-top: 0.5rem;
+}
+
+.sapMLabel {
+    font-weight: 600;
+}
+
 .sapUxAPObjectPageHeaderContent,
 .sapUxAPObjectPageHeaderTitle {
     background: #ffffff;
 }
-.sapMPanel .sapMPanelContent {
-    padding-top: 0.5rem;
-}
-
-.sapMLabel {
-    font-weight: 600;
-}
-.loginWrapper {
-    max-width: 460px;
-    margin: 0 auto;
-}
-
-.loginPanel {
-    border-radius: 1rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
-    background: #ffffff;
-}
-.appShellWrapper {
-    min-height: 100vh;
-    background: #f7f9fb;
-}
-
-.appShellHeader {
-    background: #ffffff;
-    border-bottom: 1px solid #d9d9d9;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-}
 
 .loginWrapper {
     max-width: 460px;
@@ -65,14 +46,6 @@
     border-radius: 1rem;
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
     background: #ffffff;
-}
-
-.sapMPanel .sapMPanelContent {
-    padding-top: 0.5rem;
-}
-
-.sapMLabel {
-    font-weight: 600;
 }
 
 .appShellWrapper {
@@ -87,7 +60,425 @@
     padding-right: 1rem;
 }
 
-.sapMPage {
-    padding-top: 0.5rem;
+.dashboardPage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.dashboardContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.dashboardTitle {
+    margin-bottom: 0.75rem;
+}
+
+.dashboardStrip {
+    margin-bottom: 1rem;
+}
+
+.dashboardPanel {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.dashboardPanel .sapMPanelContent {
+    overflow-x: hidden;
+}
+
+.dashboardProfile {
+    padding: 0.75rem 1rem;
+    gap: 1rem;
+}
+
+.dashboardProfilePanel .sapMPanelContent {
+    padding: 0;
+}
+
+.dashboardProfileMeta {
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.dashboardMuted {
+    color: #5b6b7f;
+}
+
+.dashboardTiles {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.dashboardTile {
+    width: 12.5rem;
+    min-width: 12.5rem;
+}
+
+.dashboardActions {
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.dashboardActionsPanel .sapMPanelContent {
+    padding: 0;
+}
+
+.dashboardTwoColumns {
+    gap: 1rem;
+}
+
+.dashboardHalfPanel {
+    width: calc(50% - 0.5rem);
+    min-width: 22rem;
+}
+
+@media (max-width: 900px) {
+    .dashboardContent {
+        margin: 1rem;
+    }
+
+    .dashboardTile {
+        width: calc(50% - 0.5rem);
+        min-width: 10.5rem;
+    }
+
+    .dashboardHalfPanel {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .dashboardTile {
+        width: 100%;
+    }
+}
+
+.orgTreePage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.orgTreeContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.orgTreeTitle {
+    margin-bottom: 0.25rem;
+}
+
+.orgTreeStrip {
+    margin-bottom: 0.25rem;
+}
+
+.orgTreeStats {
+    gap: 0.75rem;
+}
+
+.orgTreeStatTile {
+    width: 13rem;
+    min-width: 13rem;
+}
+
+.orgTreePanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.orgTreePanel .sapMPanelContent {
+    padding: 0;
+}
+
+.orgTreeToolbar {
+    background: #ffffff;
+    border-bottom: 1px solid #d8e0e8;
+    padding: 0.75rem 1rem;
+}
+
+.orgTree {
+    padding: 0.5rem 1rem 1rem;
+}
+
+.orgTree .sapMLIB {
+    border-bottom: 0;
+    background: transparent;
+}
+
+.orgTree .sapMLIBContent {
+    width: 100%;
+}
+
+.orgTreeNode {
+    min-height: 4.25rem;
+    margin: 0.35rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d8e0e8;
+    border-left: 0.25rem solid #0a6ed1;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.06);
+    gap: 1rem;
+}
+
+.orgTreeNodeMain {
+    min-width: 18rem;
+    gap: 0.75rem;
+}
+
+.orgTreeAvatar {
+    background: #e8f2ff;
+    color: #0a4f9c;
+}
+
+.orgTreeNodeText {
+    gap: 0.15rem;
+}
+
+.orgTreeNodeName {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.orgTreeNodeRole {
+    color: #52677a;
+}
+
+.orgTreeNodeMeta {
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+@media (max-width: 900px) {
+    .orgTreeContent {
+        margin: 1rem;
+    }
+
+    .orgTreeStatTile {
+        width: calc(50% - 0.5rem);
+        min-width: 11rem;
+    }
+
+    .orgTreeToolbar {
+        padding: 0.75rem;
+    }
+
+    .orgTreeToolbar .sapMSF {
+        width: 100% !important;
+    }
+
+    .orgTreeNodeMeta {
+        justify-content: flex-start;
+        margin-left: 3.5rem;
+    }
+}
+
+@media (max-width: 560px) {
+    .orgTreeStatTile,
+    .orgTreeNodeMain {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .orgTreeNodeMeta {
+        margin-left: 0;
+    }
+}
+
+.departmentsPage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.departmentsContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.departmentsTitle {
+    margin-bottom: 0.25rem;
+}
+
+.departmentsStrip {
+    margin-bottom: 0.25rem;
+}
+
+.departmentsStats {
+    gap: 0.75rem;
+}
+
+.departmentsStatTile {
+    width: 13rem;
+    min-width: 13rem;
+}
+
+.departmentsPanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.departmentsPanel .sapMPanelContent {
+    padding: 0;
+}
+
+.departmentsToolbar {
+    background: #ffffff;
+    border-bottom: 1px solid #d8e0e8;
+    padding: 0.75rem 1rem;
+}
+
+.departmentsList {
+    padding: 0.5rem 1rem 1rem;
+}
+
+.departmentsList .sapMLIB {
+    margin: 0.35rem 0;
+    border: 1px solid #d8e0e8;
+    border-left: 0.25rem solid #0a6ed1;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.06);
+}
+
+.departmentsList .sapMLIBSelected {
+    border-left-color: #107e3e;
+    background: #f5fbf7;
+}
+
+.departmentsList .sapMObjLTopRow {
+    padding-top: 0.25rem;
+}
+
+.departmentsList .sapMObjLBottomRow {
+    padding-bottom: 0.25rem;
+}
+
+@media (max-width: 900px) {
+    .departmentsContent {
+        margin: 1rem;
+    }
+
+    .departmentsStatTile {
+        width: calc(50% - 0.5rem);
+        min-width: 11rem;
+    }
+
+    .departmentsToolbar {
+        padding: 0.75rem;
+    }
+
+    .departmentsToolbar .sapMSF {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 560px) {
+    .departmentsStatTile {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+.employeesPage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.employeesContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.employeesTitle {
+    margin-bottom: 0.25rem;
+}
+
+.employeesStrip {
+    margin-bottom: 0.25rem;
+}
+
+.employeesStats {
+    gap: 0.75rem;
+}
+
+.employeesStatTile {
+    width: 13rem;
+    min-width: 13rem;
+}
+
+.employeesPanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.employeesPanel .sapMPanelContent {
+    padding: 0;
+}
+
+.employeesToolbar {
+    background: #ffffff;
+    border-bottom: 1px solid #d8e0e8;
+    padding: 0.75rem 1rem;
+}
+
+.employeesActions {
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 0;
+}
+
+.employeesList {
+    padding: 0.5rem 1rem 1rem;
+}
+
+.employeesList .sapMLIB {
+    margin: 0.35rem 0;
+    border: 1px solid #d8e0e8;
+    border-left: 0.25rem solid #0a6ed1;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.06);
+}
+
+.employeesList .sapMLIBSelected {
+    border-left-color: #107e3e;
+    background: #f5fbf7;
+}
+
+.employeesList .sapMObjLTopRow {
+    padding-top: 0.25rem;
+}
+
+.employeesList .sapMObjLBottomRow {
+    padding-bottom: 0.25rem;
+}
+
+.employeeDialogContent {
+    min-width: 24rem;
+}
+
+@media (max-width: 900px) {
+    .employeesContent {
+        margin: 1rem;
+    }
+
+    .employeesStatTile {
+        width: calc(50% - 0.5rem);
+        min-width: 11rem;
+    }
+
+    .employeesToolbar {
+        padding: 0.75rem;
+    }
+
+    .employeesToolbar .sapMSF,
+    .employeesToolbar .sapMSlt {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 560px) {
+    .employeesStatTile,
+    .employeeDialogContent {
+        width: 100%;
+        min-width: 0;
+    }
 }
 

@@ -7,7 +7,8 @@
         id="pageDepartments"
         title="Departamentos"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        class="departmentsPage">
 
         <headerContent>
             <Button
@@ -22,41 +23,88 @@
                 icon="sap-icon://delete"
                 type="Negative"
                 press="onDeleteDepartment"
+                enabled="{= !!${departments>/selectedDepartment} &amp;&amp; ${departments>/selectedDepartment/canDelete} }"
+                tooltip="{path: 'departments>/selectedDepartment/canDelete', formatter: '.formatDeleteTooltip'}"
                 visible="{session>/isAdmin}" />
         </headerContent>
 
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="departmentsContent">
 
                 <Title
                     text="Estrutura de Departamentos"
                     level="H2"
-                    class="sapUiSmallMarginBottom" />
+                    class="departmentsTitle" />
 
                 <MessageStrip
-                    text="Consulte a estrutura organizacional cadastrada. Apenas administradores podem criar ou remover departamentos."
+                    text="Consulte departamentos, quantidade de colaboradores e areas vazias."
                     type="Information"
                     showIcon="true"
-                    class="sapUiSmallMarginBottom" />
+                    class="departmentsStrip" />
 
-                <Panel headerText="Departamentos cadastrados">
+                <HBox wrap="Wrap" class="departmentsStats">
+                    <GenericTile class="departmentsStatTile" header="Departamentos" subheader="Cadastrados" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{departments>/totalDepartments}" icon="sap-icon://org-chart" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="departmentsStatTile" header="Colaboradores" subheader="Com ou sem area" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{departments>/totalEmployees}" icon="sap-icon://employee" valueColor="Good" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="departmentsStatTile" header="Areas vazias" subheader="Sem colaboradores" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{departments>/emptyDepartments}" icon="sap-icon://alert" valueColor="{= ${departments>/emptyDepartments} > 0 ? 'Critical' : 'Good' }" />
+                        </TileContent>
+                    </GenericTile>
+                </HBox>
+
+                <Panel headerText="Departamentos cadastrados" class="departmentsPanel">
                     <content>
+                        <OverflowToolbar class="departmentsToolbar">
+                            <SearchField
+                                width="22rem"
+                                placeholder="Buscar por departamento, ID ou colaborador"
+                                search="onSearch"
+                                liveChange="onSearch" />
+                            <ToolbarSpacer />
+                            <ObjectStatus
+                                text="{= ${departments>/filteredItems}.length + ' exibidos' }"
+                                state="Information" />
+                        </OverflowToolbar>
+
                         <List
                             id="departmentList"
-                            class="sapUiSmallMargin"
-                            mode="SingleSelectLeft"
-                            noDataText="Nenhum departamento cadastrado."
-                            items="{departments>/}">
+                            class="departmentsList"
+                            mode="{= ${session>/isAdmin} ? 'SingleSelectLeft' : 'None' }"
+                            selectionChange="onDepartmentSelectionChange"
+                            noDataText="{departments>/noDataText}"
+                            items="{departments>/filteredItems}">
                             <items>
                                 <ObjectListItem
                                     title="{departments>name}"
-                                    number="{departments>id}"
-                                    numberUnit="ID">
+                                    intro="{= 'ID ' + ${departments>id} }"
+                                    number="{departments>employeeCount}"
+                                    numberUnit="colaboradores"
+                                    numberState="{= ${departments>employeeCount} > 0 ? 'Success' : 'Warning' }">
+                                    <attributes>
+                                        <ObjectAttribute
+                                            text="{= ${departments>employeesPreview} ? 'Equipe: ' + ${departments>employeesPreview} : 'Nenhum colaborador vinculado' }" />
+                                    </attributes>
                                     <firstStatus>
                                         <ObjectStatus
-                                            text="Ativo"
-                                            state="Success" />
+                                            icon="{= ${departments>employeeCount} > 0 ? 'sap-icon://accept' : 'sap-icon://alert' }"
+                                            text="{departments>statusText}"
+                                            state="{departments>statusState}" />
                                     </firstStatus>
+                                    <secondStatus>
+                                        <ObjectStatus
+                                            visible="{session>/isAdmin}"
+                                            icon="{= ${departments>canDelete} ? 'sap-icon://delete' : 'sap-icon://locked' }"
+                                            text="{= ${departments>canDelete} ? 'Pode deletar' : 'Protegido' }"
+                                            state="{= ${departments>canDelete} ? 'None' : 'Information' }" />
+                                    </secondStatus>
                                 </ObjectListItem>
                             </items>
                         </List>

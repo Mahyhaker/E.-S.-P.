@@ -12,8 +12,19 @@ sap.ui.define([
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.Departments", {
         onInit: function () {
-            /** @type {sap.m.Dialog | null} */
             this._oCreateDepartmentDialog = null;
+            this._allDepartments = [];
+
+            this.getView().setModel(new JSONModel({
+                items: [],
+                filteredItems: [],
+                totalDepartments: 0,
+                totalEmployees: 0,
+                emptyDepartments: 0,
+                search: "",
+                selectedDepartment: null,
+                noDataText: "Nenhum departamento cadastrado."
+            }), "departments");
 
             this.getOwnerComponent()
                 .getRouter()
@@ -36,6 +47,11 @@ sap.ui.define([
             this.getOwnerComponent().getRouter().navTo("RouteLogin", {}, true);
         },
 
+        _safeReadJson: async function (response) {
+            const sText = await response.text();
+            return sText ? JSON.parse(sText) : null;
+        },
+
         checkAccess: function () {
             const oSession = this.getOwnerComponent().getModel("session");
 
@@ -48,7 +64,7 @@ sap.ui.define([
             const bIsHr = oSession.getProperty("/isHr");
 
             if (!bIsAdmin && !bIsHr) {
-                MessageBox.error("Você não tem permissão para acessar Departamentos.", {
+                MessageBox.error("Voce nao tem permissao para acessar Departamentos.", {
                     onClose: () => {
                         this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
                     }
@@ -67,42 +83,99 @@ sap.ui.define([
             this.loadDepartments();
         },
 
-        loadDepartments: function () {
+        loadDepartments: async function () {
             const oPage = this.byId("pageDepartments");
-            const oModel = new JSONModel();
+            const oModel = this.getView().getModel("departments");
+            const oHeaders = this._getAuthHeaders();
 
             oPage.setBusy(true);
 
-            fetch(`${BASE_URL}/departments`, {
-                headers: this._getAuthHeaders()
-            })
-                .then(async (response) => {
-                    if (response.status === 401 || response.status === 403) {
-                        this._handleUnauthorized();
-                        throw new Error("Sessão expirada ou acesso negado.");
-                    }
+            try {
+                const [departmentsResponse, employeesResponse] = await Promise.all([
+                    fetch(`${BASE_URL}/departments`, { headers: oHeaders }),
+                    fetch(`${BASE_URL}/employees`, { headers: oHeaders })
+                ]);
 
-                    const data = await response.json();
+                if ([departmentsResponse, employeesResponse].some(response => response.status === 401 || response.status === 403)) {
+                    this._handleUnauthorized();
+                    throw new Error("Sessao expirada ou acesso negado.");
+                }
 
-                    if (!response.ok) {
-                        throw new Error(data.message || "Erro ao buscar departamentos.");
-                    }
+                const departments = await this._safeReadJson(departmentsResponse) || [];
+                const employees = await this._safeReadJson(employeesResponse) || [];
 
-                    return data;
-                })
-                .then((data) => {
-                    oModel.setData(data);
-                    this.getView().setModel(oModel, "departments");
-                })
-                .catch((error) => {
-                    console.error("Erro ao buscar departamentos:", error);
-                    MessageBox.error(error.message);
-                })
-                .finally(() => {
-                    oPage.setBusy(false);
+                if (!departmentsResponse.ok) {
+                    throw new Error((departments && departments.message) || "Erro ao buscar departamentos.");
+                }
+
+                if (!employeesResponse.ok) {
+                    throw new Error((employees && employees.message) || "Erro ao buscar funcionarios.");
+                }
+
+                const aItems = this._buildDepartmentItems(departments, employees);
+                this._allDepartments = aItems;
+
+                oModel.setData({
+                    items: aItems,
+                    filteredItems: aItems,
+                    totalDepartments: aItems.length,
+                    totalEmployees: employees.length,
+                    emptyDepartments: aItems.filter(item => item.employeeCount === 0).length,
+                    search: "",
+                    selectedDepartment: null,
+                    noDataText: "Nenhum departamento cadastrado."
+                });
+            } catch (error) {
+                console.error("Erro ao buscar departamentos:", error);
+                MessageBox.error(error.message);
+            } finally {
+                oPage.setBusy(false);
+            }
+        },
+
+        _buildDepartmentItems: function (departments, employees) {
+            return [...departments]
+                .sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")))
+                .map((department) => {
+                    const aEmployees = employees.filter(employee =>
+                        employee.department && String(employee.department.id) === String(department.id)
+                    );
+
+                    return {
+                        id: department.id,
+                        name: department.name,
+                        employeeCount: aEmployees.length,
+                        employeesPreview: aEmployees.slice(0, 3).map(employee => employee.name).join(", "),
+                        canDelete: aEmployees.length === 0,
+                        statusText: aEmployees.length === 0 ? "Sem colaboradores" : "Ativo",
+                        statusState: aEmployees.length === 0 ? "Warning" : "Success"
+                    };
                 });
         },
 
+        onSearch: function (oEvent) {
+            const sQuery = (oEvent.getParameter("query") || oEvent.getParameter("newValue") || "").trim().toLowerCase();
+            const aFiltered = sQuery
+                ? this._allDepartments.filter(department =>
+                    [department.name, department.id, department.employeesPreview].join(" ").toLowerCase().includes(sQuery)
+                )
+                : this._allDepartments;
+
+            const oModel = this.getView().getModel("departments");
+            oModel.setProperty("/search", sQuery);
+            oModel.setProperty("/filteredItems", aFiltered);
+            oModel.setProperty("/selectedDepartment", null);
+            oModel.setProperty(
+                "/noDataText",
+                sQuery ? "Nenhum departamento encontrado para esta busca." : "Nenhum departamento cadastrado."
+            );
+        },
+
+        onDepartmentSelectionChange: function (oEvent) {
+            const oItem = oEvent.getParameter("listItem");
+            const oDepartment = oItem && oItem.getBindingContext("departments").getObject();
+            this.getView().getModel("departments").setProperty("/selectedDepartment", oDepartment || null);
+        },
 
         onOpenCreateDepartmentDialog: async function () {
             if (!this._oCreateDepartmentDialog) {
@@ -112,7 +185,7 @@ sap.ui.define([
                     controller: this
                 });
 
-                this._oCreateDepartmentDialog = /** @type {sap.m.Dialog} */ (oDialog);
+                this._oCreateDepartmentDialog = oDialog;
                 this.getView().addDependent(this._oCreateDepartmentDialog);
             }
 
@@ -133,25 +206,21 @@ sap.ui.define([
                 return;
             }
 
-            const oPayload = {
-                name: sName
-            };
-
             fetch(`${BASE_URL}/departments`, {
                 method: "POST",
                 headers: this._getAuthHeaders(),
-                body: JSON.stringify(oPayload)
+                body: JSON.stringify({ name: sName })
             })
                 .then(async (response) => {
                     if (response.status === 401 || response.status === 403) {
                         this._handleUnauthorized();
-                        throw new Error("Sessão expirada ou acesso negado.");
+                        throw new Error("Sessao expirada ou acesso negado.");
                     }
 
-                    const data = await response.json();
+                    const data = await this._safeReadJson(response);
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Erro ao criar departamento.");
+                        throw new Error((data && data.message) || "Erro ao criar departamento.");
                     }
 
                     return data;
@@ -168,20 +237,22 @@ sap.ui.define([
         },
 
         onDeleteDepartment: function () {
-            const oList = this.byId("departmentList");
-            const oSelectedItem = oList.getSelectedItem();
+            const oDepartment = this.getView().getModel("departments").getProperty("/selectedDepartment");
 
-            if (!oSelectedItem) {
+            if (!oDepartment) {
                 MessageToast.show("Selecione um departamento para deletar.");
                 return;
             }
 
-            const oDepartment = oSelectedItem.getBindingContext("departments").getObject();
+            if (!oDepartment.canDelete) {
+                MessageBox.warning("Este departamento possui colaboradores vinculados. Remova ou transfira os colaboradores antes de deletar.");
+                return;
+            }
 
             MessageBox.confirm(
                 `Deseja realmente deletar o departamento ${oDepartment.name}?`,
                 {
-                    title: "Confirmar exclusão",
+                    title: "Confirmar exclusao",
                     actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                     emphasizedAction: MessageBox.Action.YES,
                     onClose: (oAction) => {
@@ -193,20 +264,12 @@ sap.ui.define([
                                 .then(async (response) => {
                                     if (response.status === 401 || response.status === 403) {
                                         this._handleUnauthorized();
-                                        throw new Error("Sessão expirada ou acesso negado.");
+                                        throw new Error("Sessao expirada ou acesso negado.");
                                     }
 
                                     if (!response.ok) {
-                                        let message = "Erro ao deletar departamento.";
-
-                                        try {
-                                            const data = await response.json();
-                                            message = data.message || message;
-                                        } catch (e) {
-                                            console.warn("Não foi possível interpretar a resposta de erro.", e);
-                                        }
-
-                                        throw new Error(message);
+                                        const data = await this._safeReadJson(response);
+                                        throw new Error((data && data.message) || "Erro ao deletar departamento.");
                                     }
 
                                     MessageToast.show("Departamento deletado com sucesso!");
@@ -219,6 +282,14 @@ sap.ui.define([
                     }
                 }
             );
+        },
+
+        formatEmployeeCountText: function (count) {
+            return Number(count) === 1 ? "1 colaborador" : `${count || 0} colaboradores`;
+        },
+
+        formatDeleteTooltip: function (canDelete) {
+            return canDelete ? "Departamento sem colaboradores vinculados" : "Transfira os colaboradores antes de deletar";
         },
 
         onNavBack: function () {

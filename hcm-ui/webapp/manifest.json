@@ -133,6 +133,13 @@
           ]
         },
         {
+          "name": "RouteLeaveRequestsStatus",
+          "pattern": "leave-requests/{status}",
+          "target": [
+            "TargetLeaveRequests"
+          ]
+        },
+        {
           "name": "RouteManagerApprovals",
           "pattern": "manager-approvals",
           "target": [

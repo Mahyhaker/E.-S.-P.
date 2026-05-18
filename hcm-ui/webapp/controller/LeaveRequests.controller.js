@@ -14,10 +14,17 @@ sap.ui.define([
         onInit: function () {
             /** @type {sap.m.Dialog | null} */
             this._oCreateLeaveDialog = null;
+            this._statusFilter = "";
+            this._allLeaveRequests = [];
 
             this.getOwnerComponent()
                 .getRouter()
                 .getRoute("RouteLeaveRequests")
+                .attachPatternMatched(this.onRouteMatched, this);
+
+            this.getOwnerComponent()
+                .getRouter()
+                .getRoute("RouteLeaveRequestsStatus")
                 .attachPatternMatched(this.onRouteMatched, this);
         },
 
@@ -57,9 +64,16 @@ sap.ui.define([
             return true;
         },
 
-        onRouteMatched: function () {
+        onRouteMatched: function (oEvent) {
             if (!this.checkAccess()) {
                 return;
+            }
+
+            const oArgs = oEvent.getParameter("arguments") || {};
+            this._statusFilter = oArgs.status || "";
+
+            if (this.byId("selectLeaveStatus")) {
+                this.byId("selectLeaveStatus").setSelectedKey(this._statusFilter);
             }
 
             this.loadEmployees();
@@ -73,6 +87,26 @@ sap.ui.define([
             const bIsManager = oSession.getProperty("/isManager");
             const employeeId = this._getSessionEmployeeId();
             const username = oSession.getProperty("/username");
+
+            if ((bIsAdmin || bIsHr) && this._statusFilter) {
+                this._loadLeaveRequestsFromUrl(`${BASE_URL}/leave-requests`);
+                this._loadEmployeeOptions();
+                return;
+            }
+
+            if (bIsManager && this._statusFilter && employeeId) {
+                this.getView().setModel(new JSONModel([
+                    {
+                        id: employeeId,
+                        name: username,
+                        pernr: ""
+                    }
+                ]), "employees");
+
+                this.byId("selectLeaveEmployee").setSelectedKey("");
+                this._loadLeaveRequestsFromUrl(`${BASE_URL}/leave-requests/manager/${employeeId}`);
+                return;
+            }
 
             if ((bIsEmployee || bIsManager) && employeeId) {
                 this.getView().setModel(new JSONModel([
@@ -93,6 +127,10 @@ sap.ui.define([
                 return;
             }
 
+            this._loadEmployeeOptions();
+        },
+
+        _loadEmployeeOptions: function () {
             fetch(`${BASE_URL}/employees`, {
                 headers: this._getAuthHeaders()
             })
@@ -112,6 +150,33 @@ sap.ui.define([
                 })
                 .then((data) => {
                     this.getView().setModel(new JSONModel(data), "employees");
+                })
+                .catch((error) => {
+                    MessageBox.error(error.message);
+                });
+        },
+
+        _loadLeaveRequestsFromUrl: function (url) {
+            fetch(url, {
+                headers: this._getAuthHeaders()
+            })
+                .then(async (response) => {
+                    if (response.status === 401) {
+                        this._handleUnauthorized();
+                        throw new Error("Sessão expirada.");
+                    }
+
+                    const data = await this._safeReadJson(response);
+
+                    if (!response.ok) {
+                        throw new Error((data && data.message) || "Erro ao carregar ausências.");
+                    }
+
+                    return data || [];
+                })
+                .then((data) => {
+                    this._allLeaveRequests = data;
+                    this.applyStatusFilter();
                 })
                 .catch((error) => {
                     MessageBox.error(error.message);
@@ -144,11 +209,27 @@ sap.ui.define([
                     return data || [];
                 })
                 .then((data) => {
-                    this.getView().setModel(new JSONModel(data), "leaveRequests");
+                    this._allLeaveRequests = data;
+                    this.applyStatusFilter();
                 })
                 .catch((error) => {
                     MessageBox.error(error.message);
                 });
+        },
+
+        onStatusFilterChange: function () {
+            this._statusFilter = this.byId("selectLeaveStatus").getSelectedKey();
+            this.applyStatusFilter();
+        },
+
+        applyStatusFilter: function () {
+            let requests = [...(this._allLeaveRequests || [])];
+
+            if (this._statusFilter) {
+                requests = requests.filter(request => request.status === this._statusFilter);
+            }
+
+            this.getView().setModel(new JSONModel(requests), "leaveRequests");
         },
 
         onOpenCreateLeaveDialog: async function () {

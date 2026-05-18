@@ -1,6 +1,7 @@
 package com.mahyhaker.hcm.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,6 +41,16 @@ public class LeaveRequest {
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
+
+    private String approvedBy;
+
+    private LocalDateTime approvedAt;
+
+    private String rejectedBy;
+
+    private LocalDateTime rejectedAt;
+
+    private String rejectionReason;
 
     public LeaveRequest() {
     }
@@ -94,5 +105,45 @@ public class LeaveRequest {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getRejectedBy() {
+        return rejectedBy;
+    }
+
+    public void setRejectedBy(String rejectedBy) {
+        this.rejectedBy = rejectedBy;
+    }
+
+    public LocalDateTime getRejectedAt() {
+        return rejectedAt;
+    }
+
+    public void setRejectedAt(LocalDateTime rejectedAt) {
+        this.rejectedAt = rejectedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

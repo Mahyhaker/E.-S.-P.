@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/core/Fragment",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], function (Controller, JSONModel, Fragment, MessageToast, MessageBox) {
+    "sap/m/MessageBox",
+    "sap/ui/core/routing/History"
+], function (Controller, JSONModel, Fragment, MessageToast, MessageBox, History) {
     "use strict";
 
     const BASE_URL = window.location.hostname === "localhost" && window.location.port && window.location.port !== "80" ? "http://localhost:8080" : "";
@@ -13,23 +14,31 @@ sap.ui.define([
         onInit: function () {
             this._dashboardFilter = null;
             this._allEmployees = [];
-
-            /** @type {sap.m.Dialog | null} */
             this._oCreateDialog = null;
-
-            /** @type {sap.m.Dialog | null} */
             this._oEditDialog = null;
-
-            /** @type {sap.m.Dialog | null} */
             this._oAccessDialog = null;
 
+            this.getView().setModel(new JSONModel(this._emptyEmployeesModel()), "employees");
+
             const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.getRoute("RouteMain").attachPatternMatched(this.onRouteMatched, this);
+            oRouter.getRoute("RouteMainFiltered").attachPatternMatched(this.onRouteMatched, this);
+        },
 
-            oRouter.getRoute("RouteMain")
-                .attachPatternMatched(this.onRouteMatched, this);
-
-            oRouter.getRoute("RouteMainFiltered")
-                .attachPatternMatched(this.onRouteMatched, this);
+        _emptyEmployeesModel: function () {
+            return {
+                items: [],
+                filteredItems: [],
+                totalEmployees: 0,
+                filteredCount: 0,
+                withoutDepartment: 0,
+                withoutManager: 0,
+                managers: 0,
+                search: "",
+                selectedDepartmentId: "",
+                selectedEmployee: null,
+                noDataText: "Nenhum funcionario encontrado."
+            };
         },
 
         _getAuthHeaders: function () {
@@ -42,15 +51,9 @@ sap.ui.define([
             };
         },
 
-        onNavBack: function () {
-            const oHistory = sap.ui.core.routing.History.getInstance();
-            const sPreviousHash = oHistory.getPreviousHash();
-
-            if (sPreviousHash !== undefined) {
-                window.history.go(-1);
-            } else {
-                this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
-            }
+        _safeReadJson: async function (response) {
+            const sText = await response.text();
+            return sText ? JSON.parse(sText) : null;
         },
 
         _handleUnauthorized: function () {
@@ -70,7 +73,7 @@ sap.ui.define([
             const bIsHr = oSession.getProperty("/isHr");
 
             if (!bIsAdmin && !bIsHr) {
-                MessageBox.error("Você não tem permissão para acessar Funcionários.", {
+                MessageBox.error("Voce nao tem permissao para acessar Funcionarios.", {
                     onClose: () => {
                         this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
                     }
@@ -89,27 +92,9 @@ sap.ui.define([
             const oArgs = oEvent.getParameter("arguments") || {};
             this._dashboardFilter = oArgs.filter || null;
 
-            this.loadEmployees();
-            this.loadDepartments();
-        },
-
-        applyDashboardFilter: function () {
-            if (!this._allEmployees) {
-                return;
-            }
-
-            let aFiltered = [...this._allEmployees];
-
-            if (this._dashboardFilter === "withoutDepartment") {
-                aFiltered = aFiltered.filter(emp => !emp.department);
-            }
-
-            if (this._dashboardFilter === "withoutManager") {
-                aFiltered = aFiltered.filter(emp => !emp.manager);
-            }
-
-            const oModel = new JSONModel(aFiltered);
-            this.getView().setModel(oModel, "employees");
+            const oModel = this.getView().getModel("employees");
+            oModel.setProperty("/search", "");
+            oModel.setProperty("/selectedDepartmentId", "");
 
             if (this.byId("searchEmployee")) {
                 this.byId("searchEmployee").setValue("");
@@ -118,78 +103,73 @@ sap.ui.define([
             if (this.byId("filterDepartment")) {
                 this.byId("filterDepartment").setSelectedKey("");
             }
+
+            this.loadEmployees();
+            this.loadDepartments();
         },
 
         loadEmployees: function () {
-            const oModel = new JSONModel();
+            const oPage = this.byId("pageEmployees");
+            oPage.setBusy(true);
 
             fetch(`${BASE_URL}/employees`, {
                 headers: this._getAuthHeaders()
             })
                 .then(async (response) => {
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 403) {
                         this._handleUnauthorized();
-                        throw new Error("Sessão expirada.");
+                        throw new Error("Sessao expirada ou acesso negado.");
                     }
 
-                    const data = await response.json();
+                    const data = await this._safeReadJson(response);
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Erro ao buscar funcionários.");
+                        throw new Error((data && data.message) || "Erro ao buscar funcionarios.");
                     }
 
-                    return data;
+                    return data || [];
                 })
                 .then((data) => {
                     this._allEmployees = data;
-
-                    oModel.setData(data);
-                    this.getView().setModel(oModel, "employees");
-
-                    const aManagers = data.filter(emp => emp.name && emp.pernr);
-                    const oManagersModel = new JSONModel(aManagers);
-                    this.getView().setModel(oManagersModel, "managers");
-
-                    this.applyDashboardFilter();
+                    this.getView().setModel(new JSONModel(data.filter(emp => emp.name && emp.pernr)), "managers");
+                    this._refreshEmployeesModel();
                 })
                 .catch((error) => {
-                    console.error("Erro ao buscar funcionários:", error);
+                    console.error("Erro ao buscar funcionarios:", error);
+                    MessageBox.error(error.message);
+                })
+                .finally(() => {
+                    oPage.setBusy(false);
                 });
         },
 
         loadDepartments: function () {
-            const oModel = new JSONModel();
-
             fetch(`${BASE_URL}/departments`, {
                 headers: this._getAuthHeaders()
             })
                 .then(async (response) => {
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 403) {
                         this._handleUnauthorized();
-                        throw new Error("Sessão expirada.");
+                        throw new Error("Sessao expirada ou acesso negado.");
                     }
 
-                    const data = await response.json();
+                    const data = await this._safeReadJson(response);
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Erro ao buscar departamentos.");
+                        throw new Error((data && data.message) || "Erro ao buscar departamentos.");
                     }
 
-                    return data;
-                })
-                .then((data) => {
-                    oModel.setData(data);
-                    this.getView().setModel(oModel, "departments");
+                    this.getView().setModel(new JSONModel(data || []), "departments");
                 })
                 .catch((error) => {
                     console.error("Erro ao buscar departamentos:", error);
                 });
         },
 
-        onFilterEmployees: function () {
-            const sSearch = this.byId("searchEmployee").getValue().toLowerCase().trim();
-            const sDepartmentId = this.byId("filterDepartment").getSelectedKey();
-
+        _refreshEmployeesModel: function () {
+            const oModel = this.getView().getModel("employees");
+            const sSearch = (oModel.getProperty("/search") || "").toLowerCase().trim();
+            const sDepartmentId = oModel.getProperty("/selectedDepartmentId") || "";
             let aFiltered = [...(this._allEmployees || [])];
 
             if (this._dashboardFilter === "withoutDepartment") {
@@ -202,10 +182,15 @@ sap.ui.define([
 
             if (sSearch) {
                 aFiltered = aFiltered.filter(emp => {
-                    const sName = emp.name ? emp.name.toLowerCase() : "";
-                    const sPernr = emp.pernr ? emp.pernr.toLowerCase() : "";
+                    const sContent = [
+                        emp.name,
+                        emp.pernr,
+                        emp.position,
+                        emp.department && emp.department.name,
+                        emp.manager && emp.manager.name
+                    ].join(" ").toLowerCase();
 
-                    return sName.includes(sSearch) || sPernr.includes(sSearch);
+                    return sContent.includes(sSearch);
                 });
             }
 
@@ -215,8 +200,57 @@ sap.ui.define([
                 );
             }
 
-            const oModel = new JSONModel(aFiltered);
-            this.getView().setModel(oModel, "employees");
+            oModel.setProperty("/items", this._allEmployees);
+            oModel.setProperty("/filteredItems", aFiltered);
+            oModel.setProperty("/totalEmployees", this._allEmployees.length);
+            oModel.setProperty("/filteredCount", aFiltered.length);
+            oModel.setProperty("/withoutDepartment", this._allEmployees.filter(emp => !emp.department).length);
+            oModel.setProperty("/withoutManager", this._allEmployees.filter(emp => !emp.manager).length);
+            oModel.setProperty("/managers", this._allEmployees.filter(emp =>
+                this._allEmployees.some(other => other.manager && other.manager.id === emp.id)
+            ).length);
+            oModel.setProperty("/selectedEmployee", null);
+            oModel.setProperty(
+                "/noDataText",
+                sSearch || sDepartmentId || this._dashboardFilter
+                    ? "Nenhum funcionario encontrado para os filtros atuais."
+                    : "Nenhum funcionario encontrado."
+            );
+        },
+
+        onFilterEmployees: function () {
+            const oModel = this.getView().getModel("employees");
+            oModel.setProperty("/search", this.byId("searchEmployee").getValue());
+            oModel.setProperty("/selectedDepartmentId", this.byId("filterDepartment").getSelectedKey());
+            this._refreshEmployeesModel();
+        },
+
+        onClearFilters: function () {
+            this._dashboardFilter = null;
+            this.byId("searchEmployee").setValue("");
+            this.byId("filterDepartment").setSelectedKey("");
+
+            const oModel = this.getView().getModel("employees");
+            oModel.setProperty("/search", "");
+            oModel.setProperty("/selectedDepartmentId", "");
+            this._refreshEmployeesModel();
+        },
+
+        onEmployeeSelectionChange: function (oEvent) {
+            const oItem = oEvent.getParameter("listItem");
+            const oEmployee = oItem && oItem.getBindingContext("employees").getObject();
+            this.getView().getModel("employees").setProperty("/selectedEmployee", oEmployee || null);
+        },
+
+        _getSelectedEmployee: function (message) {
+            const oEmployee = this.getView().getModel("employees").getProperty("/selectedEmployee");
+
+            if (!oEmployee) {
+                MessageToast.show(message || "Selecione um funcionario.");
+                return null;
+            }
+
+            return oEmployee;
         },
 
         onOpenCreateDialog: async function () {
@@ -227,7 +261,7 @@ sap.ui.define([
                     controller: this
                 });
 
-                this._oCreateDialog = /** @type {sap.m.Dialog} */ (oDialog);
+                this._oCreateDialog = oDialog;
                 this.getView().addDependent(this._oCreateDialog);
             }
 
@@ -249,72 +283,49 @@ sap.ui.define([
             const sUsername = this.byId("inputUsername").getValue().trim();
             const sPassword = this.byId("inputPassword").getValue().trim();
             const sRole = this.byId("selectRole").getSelectedKey();
-
             const fSalary = Number(sSalary);
 
-            if (!sName) {
-                MessageToast.show("Informe o nome do funcionário.");
-                return;
-            }
-
-            if (!sPosition) {
-                MessageToast.show("Informe o cargo do funcionário.");
+            if (!sName || !sPosition || !sUsername || !sPassword || !sRole) {
+                MessageToast.show("Preencha nome, cargo, usuario, senha e perfil.");
                 return;
             }
 
             if (!sSalary || Number.isNaN(fSalary) || fSalary <= 0) {
-                MessageToast.show("Informe um salário válido maior que zero.");
+                MessageToast.show("Informe um salario valido maior que zero.");
                 return;
             }
-
-            if (!sUsername) {
-                MessageToast.show("Informe o username.");
-                return;
-            }
-
-            if (!sPassword) {
-                MessageToast.show("Informe a senha.");
-                return;
-            }
-
-            if (!sRole) {
-                MessageToast.show("Selecione a role.");
-                return;
-            }
-
-            const oPayload = {
-                name: sName,
-                position: sPosition,
-                salary: fSalary,
-                departmentId: sDepartmentId ? Number(sDepartmentId) : null,
-                managerId: sManagerId ? Number(sManagerId) : null,
-                username: sUsername,
-                password: sPassword,
-                role: sRole,
-                active: true
-            };
 
             fetch(`${BASE_URL}/employees/with-user`, {
                 method: "POST",
                 headers: this._getAuthHeaders(),
-                body: JSON.stringify(oPayload)
+                body: JSON.stringify({
+                    name: sName,
+                    position: sPosition,
+                    salary: fSalary,
+                    departmentId: sDepartmentId ? Number(sDepartmentId) : null,
+                    managerId: sManagerId ? Number(sManagerId) : null,
+                    username: sUsername,
+                    password: sPassword,
+                    role: sRole,
+                    active: true
+                })
             })
                 .then(async (response) => {
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 403) {
                         this._handleUnauthorized();
-                        throw new Error("Sessão expirada.");
+                        throw new Error("Sessao expirada ou acesso negado.");
                     }
 
-                    const data = await response.json();
+                    const data = await this._safeReadJson(response);
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Erro ao criar funcionário com usuário.");
+                        throw new Error((data && data.message) || "Erro ao criar funcionario com usuario.");
                     }
 
                     return data;
                 })
                 .then(() => {
-                    MessageToast.show("Funcionário e usuário criados com sucesso!");
+                    MessageToast.show("Funcionario e usuario criados com sucesso!");
                     this.onCloseCreateDialog();
                     this.clearCreateDialogFields();
                     this.loadEmployees();
@@ -325,26 +336,18 @@ sap.ui.define([
         },
 
         clearCreateDialogFields: function () {
-            this.byId("inputName").setValue("");
-            this.byId("inputPosition").setValue("");
-            this.byId("inputSalary").setValue("");
+            ["inputName", "inputPosition", "inputSalary", "inputUsername", "inputPassword"].forEach(id => this.byId(id).setValue(""));
             this.byId("selectDepartment").setSelectedKey("");
             this.byId("selectManager").setSelectedKey("");
-            this.byId("inputUsername").setValue("");
-            this.byId("inputPassword").setValue("");
             this.byId("selectRole").setSelectedKey("");
         },
 
         onOpenEditDialog: async function () {
-            const oList = this.byId("employeeList");
-            const oSelectedItem = oList.getSelectedItem();
-
-            if (!oSelectedItem) {
-                MessageToast.show("Selecione um funcionário para editar.");
+            const oEmployee = this._getSelectedEmployee("Selecione um funcionario para editar.");
+            if (!oEmployee) {
                 return;
             }
 
-            const oEmployee = oSelectedItem.getBindingContext("employees").getObject();
             this._selectedEmployeeId = oEmployee.id;
 
             if (!this._oEditDialog) {
@@ -354,20 +357,15 @@ sap.ui.define([
                     controller: this
                 });
 
-                this._oEditDialog = /** @type {sap.m.Dialog} */ (oDialog);
+                this._oEditDialog = oDialog;
                 this.getView().addDependent(this._oEditDialog);
             }
 
             this.byId("editInputName").setValue(oEmployee.name || "");
             this.byId("editInputPosition").setValue(oEmployee.position || "");
             this.byId("editInputSalary").setValue(oEmployee.salary || "");
-            this.byId("editSelectDepartment").setSelectedKey(
-                oEmployee.department ? String(oEmployee.department.id) : ""
-            );
-            this.byId("editSelectManager").setSelectedKey(
-                oEmployee.manager ? String(oEmployee.manager.id) : ""
-            );
-
+            this.byId("editSelectDepartment").setSelectedKey(oEmployee.department ? String(oEmployee.department.id) : "");
+            this.byId("editSelectManager").setSelectedKey(oEmployee.manager ? String(oEmployee.manager.id) : "");
             this._oEditDialog.open();
         },
 
@@ -377,16 +375,65 @@ sap.ui.define([
             }
         },
 
-        onOpenAccessDialog: async function () {
-            const oList = this.byId("employeeList");
-            const oSelectedItem = oList.getSelectedItem();
+        onUpdateEmployee: function () {
+            const sName = this.byId("editInputName").getValue().trim();
+            const sPosition = this.byId("editInputPosition").getValue().trim();
+            const sSalary = this.byId("editInputSalary").getValue().trim();
+            const sDepartmentId = this.byId("editSelectDepartment").getSelectedKey();
+            const sManagerId = this.byId("editSelectManager").getSelectedKey();
+            const fSalary = Number(sSalary);
 
-            if (!oSelectedItem) {
-                MessageToast.show("Selecione um funcionário para gerenciar o acesso.");
+            if (!sName || !sPosition) {
+                MessageToast.show("Preencha nome e cargo.");
                 return;
             }
 
-            const oEmployee = oSelectedItem.getBindingContext("employees").getObject();
+            if (!sSalary || Number.isNaN(fSalary) || fSalary <= 0) {
+                MessageToast.show("Informe um salario valido maior que zero.");
+                return;
+            }
+
+            fetch(`${BASE_URL}/employees/${this._selectedEmployeeId}`, {
+                method: "PUT",
+                headers: this._getAuthHeaders(),
+                body: JSON.stringify({
+                    name: sName,
+                    position: sPosition,
+                    salary: fSalary,
+                    department: sDepartmentId ? { id: Number(sDepartmentId) } : null,
+                    manager: sManagerId ? { id: Number(sManagerId) } : null
+                })
+            })
+                .then(async (response) => {
+                    if (response.status === 401 || response.status === 403) {
+                        this._handleUnauthorized();
+                        throw new Error("Sessao expirada ou acesso negado.");
+                    }
+
+                    const data = await this._safeReadJson(response);
+
+                    if (!response.ok) {
+                        throw new Error((data && data.message) || "Erro ao atualizar funcionario.");
+                    }
+
+                    return data;
+                })
+                .then(() => {
+                    MessageToast.show("Funcionario atualizado com sucesso!");
+                    this.onCloseEditDialog();
+                    this.loadEmployees();
+                })
+                .catch((error) => {
+                    MessageBox.error(error.message);
+                });
+        },
+
+        onOpenAccessDialog: async function () {
+            const oEmployee = this._getSelectedEmployee("Selecione um funcionario para gerenciar o acesso.");
+            if (!oEmployee) {
+                return;
+            }
+
             this._selectedAccessEmployeeId = oEmployee.id;
 
             if (!this._oAccessDialog) {
@@ -396,14 +443,13 @@ sap.ui.define([
                     controller: this
                 });
 
-                this._oAccessDialog = /** @type {sap.m.Dialog} */ (oDialog);
+                this._oAccessDialog = oDialog;
                 this.getView().addDependent(this._oAccessDialog);
             }
 
             this.byId("accessSelectRole").setSelectedKey("");
             this.byId("accessSelectActive").setSelectedKey("");
             this.byId("accessInputPassword").setValue("");
-
             this._oAccessDialog.open();
         },
 
@@ -417,7 +463,6 @@ sap.ui.define([
             const sRole = this.byId("accessSelectRole").getSelectedKey();
             const sActive = this.byId("accessSelectActive").getSelectedKey();
             const sPassword = this.byId("accessInputPassword").getValue().trim();
-
             const oPayload = {};
 
             if (sRole) {
@@ -435,7 +480,7 @@ sap.ui.define([
             }
 
             if (Object.keys(oPayload).length === 0) {
-                MessageToast.show("Informe ao menos uma alteração.");
+                MessageToast.show("Informe ao menos uma alteracao.");
                 return;
             }
 
@@ -445,15 +490,15 @@ sap.ui.define([
                 body: JSON.stringify(oPayload)
             })
                 .then(async (response) => {
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 403) {
                         this._handleUnauthorized();
-                        throw new Error("Sessão expirada.");
+                        throw new Error("Sessao expirada ou acesso negado.");
                     }
 
-                    const data = await response.json();
+                    const data = await this._safeReadJson(response);
 
                     if (!response.ok) {
-                        throw new Error(data.message || "Erro ao atualizar acesso.");
+                        throw new Error((data && data.message) || "Erro ao atualizar acesso.");
                     }
 
                     return data;
@@ -461,67 +506,6 @@ sap.ui.define([
                 .then(() => {
                     MessageToast.show("Acesso atualizado com sucesso!");
                     this.onCloseAccessDialog();
-                })
-                .catch((error) => {
-                    MessageBox.error(error.message);
-                });
-        },
-
-        onUpdateEmployee: function () {
-            const sName = this.byId("editInputName").getValue().trim();
-            const sPosition = this.byId("editInputPosition").getValue().trim();
-            const sSalary = this.byId("editInputSalary").getValue().trim();
-            const sDepartmentId = this.byId("editSelectDepartment").getSelectedKey();
-            const sManagerId = this.byId("editSelectManager").getSelectedKey();
-
-            const fSalary = Number(sSalary);
-
-            if (!sName) {
-                MessageToast.show("Informe o nome do funcionário.");
-                return;
-            }
-
-            if (!sPosition) {
-                MessageToast.show("Informe o cargo do funcionário.");
-                return;
-            }
-
-            if (!sSalary || Number.isNaN(fSalary) || fSalary <= 0) {
-                MessageToast.show("Informe um salário válido maior que zero.");
-                return;
-            }
-
-            const oPayload = {
-                name: sName,
-                position: sPosition,
-                salary: fSalary,
-                department: sDepartmentId ? { id: Number(sDepartmentId) } : null,
-                manager: sManagerId ? { id: Number(sManagerId) } : null
-            };
-
-            fetch(`${BASE_URL}/employees/${this._selectedEmployeeId}`, {
-                method: "PUT",
-                headers: this._getAuthHeaders(),
-                body: JSON.stringify(oPayload)
-            })
-                .then(async (response) => {
-                    if (response.status === 401) {
-                        this._handleUnauthorized();
-                        throw new Error("Sessão expirada.");
-                    }
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.message || "Erro ao atualizar funcionário.");
-                    }
-
-                    return data;
-                })
-                .then(() => {
-                    MessageToast.show("Funcionário atualizado com sucesso!");
-                    this.onCloseEditDialog();
-                    this.loadEmployees();
                 })
                 .catch((error) => {
                     MessageBox.error(error.message);
@@ -541,43 +525,28 @@ sap.ui.define([
 
             if (oEvent && oEvent.getSource && oEvent.getSource().getBindingContext) {
                 const oContext = oEvent.getSource().getBindingContext("employees");
-                if (oContext) {
-                    oEmployee = oContext.getObject();
-                }
+                oEmployee = oContext && oContext.getObject();
             }
 
             if (!oEmployee) {
-                const oList = this.byId("employeeList");
-                const oSelectedItem = oList.getSelectedItem();
-
-                if (!oSelectedItem) {
-                    MessageToast.show("Selecione um funcionário para ver os detalhes.");
-                    return;
-                }
-
-                oEmployee = oSelectedItem.getBindingContext("employees").getObject();
+                oEmployee = this._getSelectedEmployee("Selecione um funcionario para ver os detalhes.");
             }
 
-            this.getOwnerComponent().getRouter().navTo("RouteDetail", {
-                id: oEmployee.id
-            });
+            if (oEmployee) {
+                this.getOwnerComponent().getRouter().navTo("RouteDetail", { id: oEmployee.id });
+            }
         },
 
         onDeleteEmployee: function () {
-            const oList = this.byId("employeeList");
-            const oSelectedItem = oList.getSelectedItem();
-
-            if (!oSelectedItem) {
-                MessageToast.show("Selecione um funcionário para deletar.");
+            const oEmployee = this._getSelectedEmployee("Selecione um funcionario para deletar.");
+            if (!oEmployee) {
                 return;
             }
 
-            const oEmployee = oSelectedItem.getBindingContext("employees").getObject();
-
             MessageBox.confirm(
-                `Deseja realmente deletar o funcionário ${oEmployee.name}?`,
+                `Deseja realmente deletar o funcionario ${oEmployee.name}?`,
                 {
-                    title: "Confirmar exclusão",
+                    title: "Confirmar exclusao",
                     actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                     emphasizedAction: MessageBox.Action.YES,
                     onClose: (oAction) => {
@@ -587,25 +556,17 @@ sap.ui.define([
                                 headers: this._getAuthHeaders()
                             })
                                 .then(async (response) => {
-                                    if (response.status === 401) {
+                                    if (response.status === 401 || response.status === 403) {
                                         this._handleUnauthorized();
-                                        throw new Error("Sessão expirada.");
+                                        throw new Error("Sessao expirada ou acesso negado.");
                                     }
 
                                     if (!response.ok) {
-                                        let message = "Erro ao deletar funcionário.";
-
-                                        try {
-                                            const data = await response.json();
-                                            message = data.message || message;
-                                        } catch (e) {
-                                            console.warn("Não foi possível interpretar a resposta de erro.", e);
-                                        }
-
-                                        throw new Error(message);
+                                        const data = await this._safeReadJson(response);
+                                        throw new Error((data && data.message) || "Erro ao deletar funcionario.");
                                     }
 
-                                    MessageToast.show("Funcionário deletado com sucesso!");
+                                    MessageToast.show("Funcionario deletado com sucesso!");
                                     this.loadEmployees();
                                 })
                                 .catch((error) => {
@@ -615,6 +576,40 @@ sap.ui.define([
                     }
                 }
             );
+        },
+
+        formatInitials: function (name) {
+            if (!name) {
+                return "?";
+            }
+
+            return name
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map(part => part.charAt(0).toUpperCase())
+                .join("");
+        },
+
+        formatMoney: function (value) {
+            if (value === null || value === undefined || value === "") {
+                return "";
+            }
+
+            return Number(value).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+        },
+
+        onNavBack: function () {
+            const sPreviousHash = History.getInstance().getPreviousHash();
+
+            if (sPreviousHash !== undefined) {
+                window.history.go(-1);
+            } else {
+                this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
+            }
         }
     });
 });

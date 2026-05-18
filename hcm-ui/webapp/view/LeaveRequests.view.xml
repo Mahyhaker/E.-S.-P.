@@ -47,6 +47,18 @@
                                     key="{employees>id}"
                                     text="{= ${employees>name} + ' - ' + ${employees>pernr} }" />
                             </Select>
+
+                            <Label text="Status" class="sapUiSmallMarginTop" />
+                            <Select
+                                id="selectLeaveStatus"
+                                forceSelection="false"
+                                selectedKey=""
+                                change="onStatusFilterChange">
+                                <core:Item key="" text="Todos os status" />
+                                <core:Item key="PENDING" text="Pendentes" />
+                                <core:Item key="APPROVED" text="Aprovadas" />
+                                <core:Item key="REJECTED" text="Rejeitadas" />
+                            </Select>
                         </VBox>
                     </content>
                 </Panel>

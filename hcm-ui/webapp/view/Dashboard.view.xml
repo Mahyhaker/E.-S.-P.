@@ -1,279 +1,124 @@
 <mvc:View
     controllerName="com.mahyhaker.hcmui.hcmui.controller.Dashboard"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m"
->
+    xmlns="sap.m">
     <Page
         id="pageDashboard"
         title="Dashboard RH"
         busy="{dashboard>/busy}"
-    >
+        class="dashboardPage">
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="dashboardContent">
+
                 <!-- ADMIN / HR -->
                 <VBox visible="{= ${session>/isAdmin} || ${session>/isHr} }">
-                    <Title
-                        text="Visão Geral do RH"
-                        level="H2"
-                        class="sapUiSmallMarginBottom"
-                    />
+                    <Title text="Visao Geral do RH" level="H2" class="dashboardTitle" />
 
                     <MessageStrip
-                        text="Acompanhe os principais indicadores e acesse rapidamente os módulos administrativos."
+                        text="Acompanhe indicadores, pendencias e atalhos administrativos."
                         type="Information"
                         showIcon="true"
-                        class="sapUiSmallMarginBottom"
-                    />
+                        class="dashboardStrip" />
 
-                    <HBox
-                        wrap="Wrap"
-                        justifyContent="Start"
-                    >
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Funcionários"
-                            subheader="Total cadastrado"
-                            press="onOpenEmployees"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent
-                                    value="{dashboard>/totalEmployees}"
-                                    valueColor="Good"
-                                />
-                            </TileContent>
-                        </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Departamentos"
-                            subheader="Estrutura ativa"
-                            press="onOpenDepartments"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent
-                                    value="{dashboard>/totalDepartments}"
-                                    valueColor="Neutral"
-                                />
-                            </TileContent>
-                        </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Gerentes"
-                            subheader="Hierarquia"
-                            press="onOpenOrgTree"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent
-                                    value="{dashboard>/totalManagers}"
-                                    valueColor="Neutral"
-                                />
-                            </TileContent>
-                        </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Sem gerente"
-                            subheader="Pendência estrutural"
-                            press="onOpenEmployeesWithoutManager"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent
-                                    value="{dashboard>/withoutManager}"
-                                    valueColor="{= ${dashboard>/withoutManager} > 0 ? 'Critical' : 'Good' }"
-                                />
-                            </TileContent>
-                        </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginBottom"
-                            header="Sem departamento"
-                            subheader="Pendência estrutural"
-                            press="onOpenEmployeesWithoutDepartment"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent
-                                    value="{dashboard>/withoutDepartment}"
-                                    valueColor="{= ${dashboard>/withoutDepartment} > 0 ? 'Critical' : 'Good' }"
-                                />
-                            </TileContent>
-                        </GenericTile>
-                    </HBox>
-
-                    <Panel
-                        headerText="Atalhos administrativos"
-                        class="sapUiMediumMarginTop"
-                    >
+                    <Panel headerText="Meu perfil" class="dashboardPanel dashboardProfilePanel">
                         <content>
-                            <HBox
-                                wrap="Wrap"
-                                class="sapUiSmallMargin"
-                            >
-                                <Button
-                                    text="Funcionários"
-                                    icon="sap-icon://employee"
-                                    type="Emphasized"
-                                    press="onOpenEmployees"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Departamentos"
-                                    icon="sap-icon://org-chart"
-                                    press="onOpenDepartments"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Organograma"
-                                    icon="sap-icon://tree"
-                                    press="onOpenOrgTree"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Minhas Ausências"
-                                    icon="sap-icon://calendar"
-                                    press="onOpenLeaveRequests"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Aprovar Solicitações"
-                                    icon="sap-icon://task"
-                                    press="onOpenManagerApprovals"
-                                    visible="{= ${session>/isAdmin} || ${session>/isManager} }"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Aprovações RH"
-                                    icon="sap-icon://group"
-                                    press="onOpenHrApprovals"
-                                    class="sapUiTinyMarginBottom"
-                                />
+                            <HBox class="dashboardProfile" alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap">
+                                <VBox>
+                                    <Title text="{= ${dashboard>/profile/employeeName} || ${dashboard>/profile/username} || 'Usuario' }" level="H4" />
+                                    <Text text="{dashboard>/profile/username}" class="dashboardMuted" />
+                                </VBox>
+                                <HBox wrap="Wrap" class="dashboardProfileMeta">
+                                    <ObjectStatus text="{dashboard>/profile/role}" state="Information" />
+                                    <ObjectStatus
+                                        visible="{= !!${dashboard>/profile/position} }"
+                                        text="{= 'Cargo: ' + ${dashboard>/profile/position} }"
+                                        state="None" />
+                                    <ObjectStatus
+                                        visible="{= !!${dashboard>/profile/departmentName} }"
+                                        text="{= 'Departamento: ' + ${dashboard>/profile/departmentName} }"
+                                        state="None" />
+                                    <ObjectStatus
+                                        visible="{= !!${dashboard>/profile/managerName} }"
+                                        text="{= 'Gerente: ' + ${dashboard>/profile/managerName} }"
+                                        state="None" />
+                                </HBox>
                             </HBox>
                         </content>
                     </Panel>
 
-                    <HBox
-                        wrap="Wrap"
-                        class="sapUiMediumMarginTop"
-                    >
-                        <VBox
-                            width="48%"
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                        >
-                            <Panel headerText="Funcionários por departamento">
-                                <content>
-                                    <List
-                                        class="sapUiSmallMargin"
-                                        noDataText="Sem dados de departamentos."
-                                        items="{dashboard>/departmentChartData}"
-                                    >
-                                        <items>
-                                            <ObjectListItem
-                                                title="{dashboard>department}"
-                                                number="{dashboard>count}"
-                                                numberUnit="funcionários"
-                                            >
-                                                <firstStatus>
-                                                    <ObjectStatus
-                                                        text="{= ${dashboard>count} + ' ativos na área' }"
-                                                        state="Information"
-                                                    />
-                                                </firstStatus>
-                                            </ObjectListItem>
-                                        </items>
-                                    </List>
-                                </content>
-                            </Panel>
-                        </VBox>
-
-                        <VBox
-                            width="48%"
-                            class="sapUiTinyMarginBottom"
-                        >
-                            <Panel headerText="Pendências estruturais">
-                                <content>
-                                    <List class="sapUiSmallMargin">
-                                        <items>
-                                            <ObjectListItem
-                                                title="Funcionários sem departamento"
-                                                number="{dashboard>/withoutDepartment}"
-                                                numberState="{= ${dashboard>/withoutDepartment} > 0 ? 'Warning' : 'Success' }"
-                                            />
-                                            <ObjectListItem
-                                                title="Funcionários sem gerente"
-                                                number="{dashboard>/withoutManager}"
-                                                numberState="{= ${dashboard>/withoutManager} > 0 ? 'Warning' : 'Success' }"
-                                            />
-                                        </items>
-                                    </List>
-                                </content>
-                            </Panel>
-                        </VBox>
+                    <HBox wrap="Wrap" class="dashboardTiles">
+                        <GenericTile class="dashboardTile" header="Funcionarios" subheader="Total cadastrado" press="onOpenEmployees" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/totalEmployees}" valueColor="Good" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Departamentos" subheader="Estrutura ativa" press="onOpenDepartments" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/totalDepartments}" valueColor="Neutral" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Gerentes" subheader="Hierarquia" press="onOpenOrgTree" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/totalManagers}" valueColor="Neutral" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Sem gerente" subheader="Pendencia estrutural" press="onOpenEmployeesWithoutManager" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/withoutManager}" valueColor="{= ${dashboard>/withoutManager} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Sem departamento" subheader="Pendencia estrutural" press="onOpenEmployeesWithoutDepartment" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/withoutDepartment}" valueColor="{= ${dashboard>/withoutDepartment} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Pendentes" subheader="Ausencias" press="onOpenPendingLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/pendingLeaveRequests}" valueColor="{= ${dashboard>/pendingLeaveRequests} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Aprovadas" subheader="Ausencias" press="onOpenApprovedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/approvedLeaveRequests}" valueColor="Good" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Rejeitadas" subheader="Ausencias" press="onOpenRejectedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/rejectedLeaveRequests}" valueColor="Error" /></TileContent>
+                        </GenericTile>
                     </HBox>
 
-                    <Panel
-                        headerText="Funcionários sem departamento"
-                        class="sapUiMediumMarginTop"
-                    >
+                    <Panel headerText="Atalhos administrativos" class="dashboardPanel dashboardActionsPanel">
                         <content>
-                            <List
-                                class="sapUiSmallMargin"
-                                noDataText="Todos os funcionários estão vinculados a departamentos."
-                                items="{dashboard>/employeesWithoutDepartment}"
-                            >
-                                <items>
-                                    <ObjectListItem
-                                        title="{dashboard>name}"
-                                        intro="{dashboard>position}"
-                                        number="{dashboard>pernr}"
-                                        numberUnit="PERNR"
-                                        type="Navigation"
-                                        press="onOpenEmployeeDetail"
-                                    >
-                                        <firstStatus>
-                                            <ObjectStatus
-                                                text="Sem departamento"
-                                                state="Warning"
-                                            />
-                                        </firstStatus>
-                                    </ObjectListItem>
-                                </items>
-                            </List>
+                            <HBox wrap="Wrap" class="dashboardActions">
+                                <Button text="Funcionarios" icon="sap-icon://employee" type="Emphasized" press="onOpenEmployees" />
+                                <Button text="Departamentos" icon="sap-icon://org-chart" press="onOpenDepartments" />
+                                <Button text="Organograma" icon="sap-icon://tree" press="onOpenOrgTree" />
+                                <Button text="Minhas Ausencias" icon="sap-icon://calendar" press="onOpenLeaveRequests" />
+                                <Button text="Aprovar Solicitacoes" icon="sap-icon://task" press="onOpenManagerApprovals" />
+                                <Button text="Aprovacoes RH" icon="sap-icon://group" press="onOpenHrApprovals" />
+                            </HBox>
                         </content>
                     </Panel>
 
-                    <Panel
-                        headerText="Últimos funcionários cadastrados"
-                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
-                    >
+                    <HBox wrap="Wrap" class="dashboardTwoColumns">
+                        <Panel headerText="Funcionarios por departamento" class="dashboardPanel dashboardHalfPanel">
+                            <content>
+                                <List noDataText="Sem dados de departamentos." items="{dashboard>/departmentChartData}">
+                                    <items>
+                                        <ObjectListItem title="{dashboard>department}" number="{dashboard>count}" numberUnit="funcionarios">
+                                            <firstStatus><ObjectStatus text="{= ${dashboard>count} + ' ativos' }" state="Information" /></firstStatus>
+                                        </ObjectListItem>
+                                    </items>
+                                </List>
+                            </content>
+                        </Panel>
+
+                        <Panel headerText="Pendencias estruturais" class="dashboardPanel dashboardHalfPanel">
+                            <content>
+                                <List>
+                                    <items>
+                                        <ObjectListItem title="Funcionarios sem departamento" number="{dashboard>/withoutDepartment}" numberState="{= ${dashboard>/withoutDepartment} > 0 ? 'Warning' : 'Success' }" />
+                                        <ObjectListItem title="Funcionarios sem gerente" number="{dashboard>/withoutManager}" numberState="{= ${dashboard>/withoutManager} > 0 ? 'Warning' : 'Success' }" />
+                                    </items>
+                                </List>
+                            </content>
+                        </Panel>
+                    </HBox>
+
+                    <Panel headerText="Proximas ausencias" class="dashboardPanel">
                         <content>
-                            <List
-                                class="sapUiSmallMargin"
-                                noDataText="Nenhum funcionário cadastrado."
-                                items="{dashboard>/recentEmployees}"
-                            >
+                            <List noDataText="Nenhuma ausencia futura registrada." items="{dashboard>/upcomingLeaveRequests}">
                                 <items>
-                                    <ObjectListItem
-                                        title="{dashboard>name}"
-                                        intro="{dashboard>position}"
-                                        number="{dashboard>pernr}"
-                                        numberUnit="PERNR"
-                                        type="Navigation"
-                                        press="onOpenEmployeeDetail"
-                                    >
+                                    <ObjectListItem title="{dashboard>employee/name}" intro="{dashboard>reason}" number="{dashboard>startDate}" numberUnit="inicio">
                                         <attributes>
-                                            <ObjectAttribute
-                                                text="{= ${dashboard>department/name} ? 'Departamento: ' + ${dashboard>department/name} : 'Departamento: Sem departamento' }"
-                                            />
+                                            <ObjectAttribute text="{= 'Fim: ' + ${dashboard>endDate} }" />
+                                            <ObjectAttribute text="{= 'Status: ' + ${dashboard>status} }" />
                                         </attributes>
                                     </ObjectListItem>
                                 </items>
@@ -284,143 +129,114 @@
 
                 <!-- MANAGER -->
                 <VBox visible="{session>/isManager}">
-                    <Title
-                        text="Painel do Gerente"
-                        level="H2"
-                        class="sapUiSmallMarginBottom"
-                    />
+                    <Title text="Painel do Gerente" level="H2" class="dashboardTitle" />
 
                     <MessageStrip
-                        text="Gerencie aprovações da equipe e acompanhe sua estrutura."
+                        text="Acompanhe sua equipe, aprovacoes pendentes e proximas ausencias."
                         type="Information"
                         showIcon="true"
-                        class="sapUiSmallMarginBottom"
-                    />
+                        class="dashboardStrip" />
 
-                    <HBox
-                        wrap="Wrap"
-                        justifyContent="Start"
-                    >
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Minhas Ausências"
-                            subheader="Solicitações pessoais"
-                            press="onOpenLeaveRequests"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent value="Acessar" />
-                            </TileContent>
+                    <Panel headerText="Meu perfil" class="dashboardPanel dashboardProfilePanel">
+                        <content>
+                            <HBox class="dashboardProfile" alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap">
+                                <VBox>
+                                    <Title text="{= ${dashboard>/profile/employeeName} || ${dashboard>/profile/username} || 'Usuario' }" level="H4" />
+                                    <Text text="{dashboard>/profile/username}" class="dashboardMuted" />
+                                </VBox>
+                                <HBox wrap="Wrap" class="dashboardProfileMeta">
+                                    <ObjectStatus text="{dashboard>/profile/role}" state="Information" />
+                                    <ObjectStatus text="{= 'Cargo: ' + ${dashboard>/profile/position} }" visible="{= !!${dashboard>/profile/position} }" />
+                                    <ObjectStatus text="{= 'Departamento: ' + ${dashboard>/profile/departmentName} }" visible="{= !!${dashboard>/profile/departmentName} }" />
+                                </HBox>
+                            </HBox>
+                        </content>
+                    </Panel>
+
+                    <HBox wrap="Wrap" class="dashboardTiles">
+                        <GenericTile class="dashboardTile" header="Equipe" subheader="Colaboradores diretos" press="onOpenOrgTree" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/totalEmployees}" valueColor="Neutral" /></TileContent>
                         </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                            header="Aprovar Solicitações"
-                            subheader="Equipe"
-                            press="onOpenManagerApprovals"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent value="Acessar" />
-                            </TileContent>
+                        <GenericTile class="dashboardTile" header="Pendentes" subheader="Aguardando aprovacao" press="onOpenPendingLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/pendingLeaveRequests}" valueColor="{= ${dashboard>/pendingLeaveRequests} > 0 ? 'Critical' : 'Good' }" /></TileContent>
                         </GenericTile>
-
-                        <GenericTile
-                            class="sapUiTinyMarginBottom"
-                            header="Organograma"
-                            subheader="Estrutura"
-                            press="onOpenOrgTree"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent value="Ver" />
-                            </TileContent>
+                        <GenericTile class="dashboardTile" header="Aprovadas" subheader="Equipe" press="onOpenApprovedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/approvedLeaveRequests}" valueColor="Good" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Rejeitadas" subheader="Equipe" press="onOpenRejectedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/rejectedLeaveRequests}" valueColor="Error" /></TileContent>
                         </GenericTile>
                     </HBox>
 
-                    <Panel
-                        headerText="Ações do gerente"
-                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
-                    >
+                    <Panel headerText="Acoes do gerente" class="dashboardPanel dashboardActionsPanel">
                         <content>
-                            <HBox
-                                wrap="Wrap"
-                                class="sapUiSmallMargin"
-                            >
-                                <Button
-                                    text="Minhas Ausências"
-                                    icon="sap-icon://calendar"
-                                    type="Emphasized"
-                                    press="onOpenLeaveRequests"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Aprovar Solicitações"
-                                    icon="sap-icon://task"
-                                    press="onOpenManagerApprovals"
-                                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
-                                />
-
-                                <Button
-                                    text="Organograma"
-                                    icon="sap-icon://tree"
-                                    press="onOpenOrgTree"
-                                    class="sapUiTinyMarginBottom"
-                                />
+                            <HBox wrap="Wrap" class="dashboardActions">
+                                <Button text="Minhas Ausencias" icon="sap-icon://calendar" type="Emphasized" press="onOpenLeaveRequests" />
+                                <Button text="Aprovar Solicitacoes" icon="sap-icon://task" press="onOpenManagerApprovals" />
+                                <Button text="Organograma" icon="sap-icon://tree" press="onOpenOrgTree" />
                             </HBox>
+                        </content>
+                    </Panel>
+
+                    <Panel headerText="Proximas ausencias da equipe" class="dashboardPanel">
+                        <content>
+                            <List noDataText="Nenhuma ausencia futura na equipe." items="{dashboard>/upcomingLeaveRequests}">
+                                <items>
+                                    <ObjectListItem title="{dashboard>employee/name}" intro="{dashboard>reason}" number="{dashboard>startDate}" numberUnit="inicio">
+                                        <attributes>
+                                            <ObjectAttribute text="{= 'Fim: ' + ${dashboard>endDate} }" />
+                                            <ObjectAttribute text="{= 'Status: ' + ${dashboard>status} }" />
+                                        </attributes>
+                                    </ObjectListItem>
+                                </items>
+                            </List>
                         </content>
                     </Panel>
                 </VBox>
 
                 <!-- EMPLOYEE -->
                 <VBox visible="{session>/isEmployee}">
-                    <Title
-                        text="Área do Colaborador"
-                        level="H2"
-                        class="sapUiSmallMarginBottom"
-                    />
+                    <Title text="Area do Colaborador" level="H2" class="dashboardTitle" />
 
                     <MessageStrip
-                        text="Consulte e acompanhe suas solicitações de ausência."
+                        text="Consulte suas solicitacoes e acompanhe o status das ausencias."
                         type="Information"
                         showIcon="true"
-                        class="sapUiSmallMarginBottom"
-                    />
+                        class="dashboardStrip" />
 
-                    <HBox
-                        wrap="Wrap"
-                        justifyContent="Start"
-                    >
-                        <GenericTile
-                            class="sapUiTinyMarginBottom"
-                            header="Minhas Ausências"
-                            subheader="Solicitações registradas"
-                            press="onOpenLeaveRequests"
-                            frameType="OneByHalf"
-                        >
-                            <TileContent>
-                                <NumericContent value="Acessar" />
-                            </TileContent>
+                    <Panel headerText="Meu perfil" class="dashboardPanel dashboardProfilePanel">
+                        <content>
+                            <HBox class="dashboardProfile" alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap">
+                                <VBox>
+                                    <Title text="{= ${dashboard>/profile/employeeName} || ${dashboard>/profile/username} || 'Usuario' }" level="H4" />
+                                    <Text text="{dashboard>/profile/username}" class="dashboardMuted" />
+                                </VBox>
+                                <HBox wrap="Wrap" class="dashboardProfileMeta">
+                                    <ObjectStatus text="{dashboard>/profile/role}" state="Information" />
+                                    <ObjectStatus text="{= 'Cargo: ' + ${dashboard>/profile/position} }" visible="{= !!${dashboard>/profile/position} }" />
+                                    <ObjectStatus text="{= 'Departamento: ' + ${dashboard>/profile/departmentName} }" visible="{= !!${dashboard>/profile/departmentName} }" />
+                                    <ObjectStatus text="{= 'Gerente: ' + ${dashboard>/profile/managerName} }" visible="{= !!${dashboard>/profile/managerName} }" />
+                                </HBox>
+                            </HBox>
+                        </content>
+                    </Panel>
+
+                    <HBox wrap="Wrap" class="dashboardTiles">
+                        <GenericTile class="dashboardTile" header="Pendentes" subheader="Minhas solicitacoes" press="onOpenPendingLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/pendingLeaveRequests}" valueColor="{= ${dashboard>/pendingLeaveRequests} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Aprovadas" subheader="Minhas solicitacoes" press="onOpenApprovedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/approvedLeaveRequests}" valueColor="Good" /></TileContent>
+                        </GenericTile>
+                        <GenericTile class="dashboardTile" header="Rejeitadas" subheader="Minhas solicitacoes" press="onOpenRejectedLeaveRequests" frameType="OneByHalf">
+                            <TileContent><NumericContent value="{dashboard>/rejectedLeaveRequests}" valueColor="Error" /></TileContent>
                         </GenericTile>
                     </HBox>
 
-                    <Panel
-                        headerText="Acesso rápido"
-                        class="sapUiMediumMarginTop sapUiMediumMarginBottom"
-                    >
+                    <Panel headerText="Acesso rapido" class="dashboardPanel dashboardActionsPanel">
                         <content>
-                            <HBox
-                                wrap="Wrap"
-                                class="sapUiSmallMargin"
-                            >
-                                <Button
-                                    text="Minhas Ausências"
-                                    icon="sap-icon://calendar"
-                                    type="Emphasized"
-                                    press="onOpenLeaveRequests"
-                                    class="sapUiTinyMarginBottom"
-                                />
+                            <HBox wrap="Wrap" class="dashboardActions">
+                                <Button text="Minhas Ausencias" icon="sap-icon://calendar" type="Emphasized" press="onOpenLeaveRequests" />
                             </HBox>
                         </content>
                     </Panel>

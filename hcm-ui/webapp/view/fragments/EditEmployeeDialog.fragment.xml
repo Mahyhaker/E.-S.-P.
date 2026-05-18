@@ -3,28 +3,27 @@
     xmlns:core="sap.ui.core">
     <Dialog
         id="editEmployeeDialog"
-        title="Editar Funcionário">
+        title="Editar Funcionario"
+        contentWidth="32rem">
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="sapUiMediumMargin employeeDialogContent">
                 <Label text="Nome" />
                 <Input id="editInputName" />
 
                 <Label text="Cargo" class="sapUiSmallMarginTop" />
                 <Input id="editInputPosition" />
 
-                <Label text="Salário" class="sapUiSmallMarginTop" />
+                <Label text="Salario" class="sapUiSmallMarginTop" />
                 <Input id="editInputSalary" type="Number" />
 
                 <Label text="Departamento" class="sapUiSmallMarginTop" />
-                <Select
+                <ComboBox
                     id="editSelectDepartment"
+                    selectedKey=""
+                    placeholder="Sem departamento"
                     items="{departments>/}">
-                    <items>
-                        <core:Item
-                            key="{departments>id}"
-                            text="{departments>name}" />
-                    </items>
-                </Select>
+                    <core:Item key="{departments>id}" text="{departments>name}" />
+                </ComboBox>
 
                 <Label text="Gerente" class="sapUiSmallMarginTop" />
                 <ComboBox
@@ -32,14 +31,12 @@
                     selectedKey=""
                     placeholder="Sem gerente"
                     items="{managers>/}">
-                    <core:Item
-                        key="{managers>id}"
-                        text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                    <core:Item key="{managers>id}" text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
                 </ComboBox>
             </VBox>
         </content>
         <beginButton>
-            <Button text="Salvar" press="onUpdateEmployee" />
+            <Button text="Salvar" type="Emphasized" press="onUpdateEmployee" />
         </beginButton>
         <endButton>
             <Button text="Cancelar" press="onCloseEditDialog" />
