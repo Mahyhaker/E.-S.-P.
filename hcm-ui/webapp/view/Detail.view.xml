@@ -1,81 +1,130 @@
 <mvc:View
     controllerName="com.mahyhaker.hcmui.hcmui.controller.Detail"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m"
-    xmlns:l="sap.ui.layout">
+    xmlns="sap.m">
 
     <Page
         id="pageDetail"
-        title="Perfil do Funcionário"
+        title="Perfil do Funcionario"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        busy="{detail>/busy}"
+        class="employeeProfilePage">
 
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="employeeProfileContent">
 
-                <Title
-                    text="{detail>/name}"
-                    level="H2"
-                    class="sapUiSmallMarginBottom" />
-
-                <ObjectStatus
-                    text="{detail>/position}"
-                    state="Information"
-                    class="sapUiSmallMarginBottom" />
-
-                <Panel
-                    headerText="Resumo"
-                    class="sapUiMediumMarginBottom">
+                <Panel class="employeeProfileHero">
                     <content>
-                        <l:Grid
-                            defaultSpan="L6 M6 S12"
-                            hSpacing="2"
-                            vSpacing="1"
-                            class="sapUiSmallMargin">
+                        <HBox alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap" class="employeeProfileHeader">
+                            <HBox alignItems="Center" class="employeeProfileIdentity">
+                                <Avatar
+                                    displayShape="Circle"
+                                    displaySize="L"
+                                    initials="{path: 'detail>/employee/name', formatter: '.formatInitials'}"
+                                    class="employeeProfileAvatar" />
+                                <VBox>
+                                    <Title
+                                        text="{= ${detail>/employee/name} || 'Funcionario' }"
+                                        level="H2"
+                                        class="employeeProfileName" />
+                                    <Text
+                                        text="{= ${detail>/employee/position} || 'Cargo nao informado' }"
+                                        class="employeeProfileRole" />
+                                </VBox>
+                            </HBox>
 
-                            <VBox>
-                                <Label text="Nome" />
-                                <Text text="{detail>/name}" />
-                            </VBox>
-
-                            <VBox>
-                                <Label text="Cargo" />
-                                <Text text="{detail>/position}" />
-                            </VBox>
-
-                            <VBox>
-                                <Label text="PERNR" />
-                                <Text text="{detail>/pernr}" />
-                            </VBox>
-
-                            <VBox>
-                                <Label text="Salário" />
-                                <Text text="{detail>/salary}" />
-                            </VBox>
-                        </l:Grid>
+                            <HBox wrap="Wrap" class="employeeProfileBadges">
+                                <ObjectStatus
+                                    icon="sap-icon://employee"
+                                    text="{= 'PERNR ' + (${detail>/employee/pernr} || '-') }"
+                                    state="Information" />
+                                <ObjectStatus
+                                    icon="sap-icon://org-chart"
+                                    text="{= ${detail>/employee/department/name} || 'Sem departamento' }"
+                                    state="{= ${detail>/employee/department/name} ? 'Information' : 'Warning' }" />
+                                <ObjectStatus
+                                    icon="sap-icon://manager"
+                                    text="{= ${detail>/employee/manager/name} || 'Sem gerente' }"
+                                    state="{= ${detail>/employee/manager/name} ? 'Success' : 'Warning' }" />
+                            </HBox>
+                        </HBox>
                     </content>
                 </Panel>
 
-                <Panel
-                    headerText="Organização"
-                    class="sapUiMediumMarginBottom">
+                <HBox wrap="Wrap" class="employeeProfileStats">
+                    <GenericTile class="employeeProfileStatTile" header="Solicitacoes" subheader="Total registradas" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{detail>/leaveSummary/total}" icon="sap-icon://calendar" valueColor="Neutral" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeeProfileStatTile" header="Pendentes" subheader="Aguardando aprovacao" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{detail>/leaveSummary/pending}" icon="sap-icon://pending" valueColor="{= ${detail>/leaveSummary/pending} > 0 ? 'Critical' : 'Good' }" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeeProfileStatTile" header="Aprovadas" subheader="Ausencias liberadas" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{detail>/leaveSummary/approved}" icon="sap-icon://accept" valueColor="Good" />
+                        </TileContent>
+                    </GenericTile>
+                    <GenericTile class="employeeProfileStatTile" header="Rejeitadas" subheader="Solicitacoes negadas" frameType="OneByHalf">
+                        <TileContent>
+                            <NumericContent value="{detail>/leaveSummary/rejected}" icon="sap-icon://decline" valueColor="Error" />
+                        </TileContent>
+                    </GenericTile>
+                </HBox>
+
+                <HBox wrap="Wrap" class="employeeProfileColumns">
+                    <Panel headerText="Dados do funcionario" class="employeeProfilePanel employeeProfileHalfPanel">
+                        <content>
+                            <List>
+                                <items>
+                                    <ObjectListItem title="Nome" number="" intro="{detail>/employee/name}" />
+                                    <ObjectListItem title="Cargo" number="" intro="{= ${detail>/employee/position} || 'Nao informado' }" />
+                                    <ObjectListItem title="PERNR" number="" intro="{= ${detail>/employee/pernr} || 'Nao informado' }" />
+                                    <ObjectListItem title="Salario" number="" intro="{path: 'detail>/employee/salary', formatter: '.formatMoney'}" />
+                                </items>
+                            </List>
+                        </content>
+                    </Panel>
+
+                    <Panel headerText="Organizacao" class="employeeProfilePanel employeeProfileHalfPanel">
+                        <content>
+                            <List>
+                                <items>
+                                    <ObjectListItem
+                                        title="Departamento"
+                                        intro="{= ${detail>/employee/department/name} || 'Sem departamento' }"
+                                        numberState="{= ${detail>/employee/department/name} ? 'Success' : 'Warning' }" />
+                                    <ObjectListItem
+                                        title="Gerente"
+                                        intro="{= ${detail>/employee/manager/name} || 'Sem gerente' }"
+                                        numberState="{= ${detail>/employee/manager/name} ? 'Success' : 'Warning' }" />
+                                </items>
+                            </List>
+                        </content>
+                    </Panel>
+                </HBox>
+
+                <Panel headerText="Ultimas solicitacoes de ausencia" class="employeeProfilePanel">
                     <content>
-                        <l:Grid
-                            defaultSpan="L6 M6 S12"
-                            hSpacing="2"
-                            vSpacing="1"
-                            class="sapUiSmallMargin">
-
-                            <VBox>
-                                <Label text="Departamento" />
-                                <Text text="{= ${detail>/department/name} ? ${detail>/department/name} : 'Sem departamento' }" />
-                            </VBox>
-
-                            <VBox>
-                                <Label text="Gerente" />
-                                <Text text="{= ${detail>/manager/name} ? ${detail>/manager/name} : 'Sem gerente' }" />
-                            </VBox>
-                        </l:Grid>
+                        <List
+                            noDataText="Nenhuma ausencia registrada."
+                            items="{detail>/latestLeaveRequests}">
+                            <items>
+                                <ObjectListItem
+                                    title="{detail>type}"
+                                    intro="{detail>reason}"
+                                    number="{detail>status}"
+                                    numberState="{path: 'detail>status', formatter: '.formatStatusState'}">
+                                    <attributes>
+                                        <ObjectAttribute text="{= 'Inicio: ' + ${detail>startDate} }" />
+                                        <ObjectAttribute text="{= 'Fim: ' + ${detail>endDate} }" />
+                                    </attributes>
+                                </ObjectListItem>
+                            </items>
+                        </List>
                     </content>
                 </Panel>
 

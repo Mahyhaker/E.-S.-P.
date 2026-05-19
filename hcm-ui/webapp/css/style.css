@@ -482,3 +482,100 @@
     }
 }
 
+.employeeProfilePage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.employeeProfileContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.employeeProfileHero,
+.employeeProfilePanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.employeeProfileHero .sapMPanelContent {
+    padding: 0;
+}
+
+.employeeProfileHeader {
+    padding: 1.25rem 1.5rem;
+    gap: 1rem;
+    background: #ffffff;
+}
+
+.employeeProfileIdentity {
+    gap: 1rem;
+}
+
+.employeeProfileAvatar {
+    background: #e8f2ff;
+    color: #0a4f9c;
+}
+
+.employeeProfileName {
+    margin-bottom: 0.15rem;
+}
+
+.employeeProfileRole {
+    color: #52677a;
+}
+
+.employeeProfileBadges {
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.employeeProfileStats {
+    gap: 0.75rem;
+}
+
+.employeeProfileStatTile {
+    width: 13rem;
+    min-width: 13rem;
+}
+
+.employeeProfileColumns {
+    gap: 1rem;
+}
+
+.employeeProfileHalfPanel {
+    width: calc(50% - 0.5rem);
+    min-width: 22rem;
+}
+
+.employeeProfilePanel .sapMPanelContent {
+    overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+    .employeeProfileContent {
+        margin: 1rem;
+    }
+
+    .employeeProfileStatTile {
+        width: calc(50% - 0.5rem);
+        min-width: 11rem;
+    }
+
+    .employeeProfileHalfPanel {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .employeeProfileStatTile,
+    .employeeProfileIdentity {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .employeeProfileBadges {
+        justify-content: flex-start;
+    }
+}
+

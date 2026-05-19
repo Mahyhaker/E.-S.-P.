@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.mahyhaker.hcm.dto.CreateEmployeeWithUserRequest;
@@ -117,6 +118,33 @@ public class EmployeeService {
                 savedUser.getUsername(),
                 savedUser.getRole().name()
         );
+    }
+
+    public Employee getByIdForUser(Long id, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AccessDeniedException("Acesso negado."));
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
+
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.HR) {
+            return employee;
+        }
+
+        Long currentEmployeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
+
+        if (currentEmployeeId != null && currentEmployeeId.equals(id)) {
+            return employee;
+        }
+
+        if (user.getRole() == Role.MANAGER
+                && employee.getManager() != null
+                && currentEmployeeId != null
+                && currentEmployeeId.equals(employee.getManager().getId())) {
+            return employee;
+        }
+
+        throw new AccessDeniedException("Acesso negado.");
     }
 
     public void deleteEmployee(Long id) {

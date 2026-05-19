@@ -3,6 +3,7 @@ package com.mahyhaker.hcm.controller;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,11 +46,10 @@ public class EmployeeController {
         return repository.findAll();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','HR')")
+    @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER','EMPLOYEE')")
     @GetMapping("/{id}")
-    public Employee getById(@PathVariable Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
+    public Employee getById(@PathVariable Long id, Authentication authentication) {
+        return service.getByIdForUser(id, authentication.getName());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
