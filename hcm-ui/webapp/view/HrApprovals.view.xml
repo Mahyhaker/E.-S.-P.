@@ -5,64 +5,44 @@
 
     <Page
         id="pageHrApprovals"
-        title="Aprovações RH"
+        title="Aprovacoes RH"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        class="leavePage">
 
         <content>
-            <VBox class="sapUiMediumMargin">
-
-                <Title
-                    text="Aprovações do RH"
-                    level="H2"
-                    class="sapUiSmallMarginBottom" />
+            <VBox class="leaveContent">
+                <Title text="Aprovacoes do RH" level="H2" class="leaveTitle" />
 
                 <MessageStrip
-                    text="Valide as solicitações encaminhadas para a etapa de RH e conclua a aprovação final."
+                    text="Acompanhe solicitacoes sem gerente direto e conclua a decisao pelo RH."
                     type="Information"
                     showIcon="true"
-                    class="sapUiSmallMarginBottom" />
+                    class="leaveStrip" />
 
-                <Panel headerText="Solicitações aguardando RH">
+                <HBox wrap="Wrap" class="leaveStats">
+                    <GenericTile class="leaveStatTile" header="Pendentes RH" subheader="Aguardando decisao" frameType="OneByHalf">
+                        <TileContent><NumericContent value="{hrSummary>/pending}" icon="sap-icon://group" valueColor="{= ${hrSummary>/pending} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                    </GenericTile>
+                </HBox>
+
+                <Panel headerText="Solicitacoes aguardando RH" class="leavePanel">
                     <content>
-                        <List
-                            class="sapUiSmallMargin"
-                            noDataText="Nenhuma solicitação pendente para o RH."
-                            items="{hrRequests>/}">
+                        <List class="leaveList" noDataText="Nenhuma solicitacao pendente para o RH." items="{hrRequests>/}">
                             <items>
                                 <CustomListItem>
-                                    <VBox class="sapUiSmallMargin">
-                                        <HBox justifyContent="SpaceBetween" wrap="Wrap">
+                                    <VBox class="leaveDecisionCard">
+                                        <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap" class="leaveDecisionHeader">
                                             <VBox>
-                                                <Title
-                                                    text="{= ${hrRequests>employee/name} + ' - ' + ${hrRequests>type} }"
-                                                    level="H5" />
-                                                <Text text="{= 'Período: ' + ${hrRequests>startDate} + ' até ' + ${hrRequests>endDate} }" />
+                                                <Title text="{= ${hrRequests>employee/name} + ' - ' + ${hrRequests>type} }" level="H5" />
+                                                <Text text="{= 'Periodo: ' + ${hrRequests>startDate} + ' ate ' + ${hrRequests>endDate} }" />
                                             </VBox>
-
-                                            <ObjectStatus
-                                                text="{hrRequests>status}"
-                                                state="{= ${hrRequests>status} === 'APPROVED' ? 'Success' : (${hrRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                            <ObjectStatus text="Pendente" state="Warning" icon="sap-icon://pending" />
                                         </HBox>
-
-                                        <Text
-                                            text="{= 'Motivo: ' + ${hrRequests>reason} }"
-                                            class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
-
-                                        <HBox wrap="Wrap">
-                                            <Button
-                                                text="Aprovar"
-                                                type="Accept"
-                                                icon="sap-icon://accept"
-                                                press="onApproveRequest"
-                                                class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
-
-                                            <Button
-                                                text="Rejeitar"
-                                                type="Reject"
-                                                icon="sap-icon://decline"
-                                                press="onRejectRequest"
-                                                class="sapUiTinyMarginBottom" />
+                                        <Text text="{= 'Motivo: ' + ${hrRequests>reason} }" class="leaveReasonText" />
+                                        <HBox wrap="Wrap" class="leaveDecisionActions">
+                                            <Button text="Aprovar" type="Accept" icon="sap-icon://accept" press="onApproveRequest" />
+                                            <Button text="Rejeitar" type="Reject" icon="sap-icon://decline" press="onRejectRequest" />
                                         </HBox>
                                     </VBox>
                                 </CustomListItem>
@@ -70,7 +50,6 @@
                         </List>
                     </content>
                 </Panel>
-
             </VBox>
         </content>
     </Page>

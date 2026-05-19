@@ -11,6 +11,8 @@ sap.ui.define([
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.HrApprovals", {
         onInit: function () {
+            this.getView().setModel(new JSONModel({ pending: 0 }), "hrSummary");
+
             this.getOwnerComponent()
                 .getRouter()
                 .getRoute("RouteHrApprovals")
@@ -83,6 +85,7 @@ sap.ui.define([
                 })
                 .then((data) => {
                     this.getView().setModel(new JSONModel(data), "hrRequests");
+                    this.getView().getModel("hrSummary").setProperty("/pending", data.length);
                 })
                 .catch((error) => {
                     MessageBox.error(error.message);

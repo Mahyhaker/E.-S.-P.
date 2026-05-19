@@ -16,6 +16,13 @@ sap.ui.define([
             this._oCreateLeaveDialog = null;
             this._statusFilter = "";
             this._allLeaveRequests = [];
+            this.getView().setModel(new JSONModel({
+                total: 0,
+                filtered: 0,
+                pending: 0,
+                approved: 0,
+                rejected: 0
+            }), "leaveSummary");
 
             this.getOwnerComponent()
                 .getRouter()
@@ -230,6 +237,13 @@ sap.ui.define([
             }
 
             this.getView().setModel(new JSONModel(requests), "leaveRequests");
+            this.getView().getModel("leaveSummary").setData({
+                total: this._allLeaveRequests.length,
+                filtered: requests.length,
+                pending: this._allLeaveRequests.filter(request => request.status === "PENDING").length,
+                approved: this._allLeaveRequests.filter(request => request.status === "APPROVED").length,
+                rejected: this._allLeaveRequests.filter(request => request.status === "REJECTED").length
+            });
         },
 
         onOpenCreateLeaveDialog: async function () {
@@ -342,6 +356,29 @@ sap.ui.define([
             }
 
             return "Warning";
+        },
+
+        formatStatusText: function (status) {
+            if (status === "APPROVED") {
+                return "Aprovada";
+            }
+
+            if (status === "REJECTED") {
+                return "Rejeitada";
+            }
+
+            return "Pendente";
+        },
+
+        formatLeaveType: function (type) {
+            const types = {
+                VACATION: "Ferias",
+                SICK_LEAVE: "Atestado",
+                HOME_OFFICE: "Home office",
+                PERSONAL: "Pessoal"
+            };
+
+            return types[type] || type || "Ausencia";
         },
 
         onNavBack: function () {

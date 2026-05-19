@@ -6,51 +6,62 @@
 
     <Page
         id="pageLeaveRequests"
-        title="Minhas Ausências"
+        title="Ausencias"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        class="leavePage">
 
         <headerContent>
             <Button
-                text="Nova Solicitação"
+                text="Nova solicitacao"
                 type="Emphasized"
                 icon="sap-icon://add"
                 press="onOpenCreateLeaveDialog" />
         </headerContent>
 
         <content>
-            <VBox class="sapUiMediumMargin">
+            <VBox class="leaveContent">
 
-                <Title
-                    text="Gestão de Ausências"
-                    level="H2"
-                    class="sapUiSmallMarginBottom" />
+                <Title text="Gestao de Ausencias" level="H2" class="leaveTitle" />
 
                 <MessageStrip
-                    text="Funcionários e gerentes veem apenas as próprias solicitações. Administradores e RH podem consultar outros colaboradores."
+                    text="Acompanhe solicitacoes, status e historico de ausencias."
                     type="Information"
                     showIcon="true"
-                    class="sapUiSmallMarginBottom" />
+                    class="leaveStrip" />
 
-                <Panel headerText="Filtro de colaborador">
+                <HBox wrap="Wrap" class="leaveStats">
+                    <GenericTile class="leaveStatTile" header="Solicitacoes" subheader="Total" frameType="OneByHalf">
+                        <TileContent><NumericContent value="{leaveSummary>/total}" icon="sap-icon://calendar" valueColor="Neutral" /></TileContent>
+                    </GenericTile>
+                    <GenericTile class="leaveStatTile" header="Pendentes" subheader="Aguardando decisao" frameType="OneByHalf">
+                        <TileContent><NumericContent value="{leaveSummary>/pending}" icon="sap-icon://pending" valueColor="{= ${leaveSummary>/pending} > 0 ? 'Critical' : 'Good' }" /></TileContent>
+                    </GenericTile>
+                    <GenericTile class="leaveStatTile" header="Aprovadas" subheader="Liberadas" frameType="OneByHalf">
+                        <TileContent><NumericContent value="{leaveSummary>/approved}" icon="sap-icon://accept" valueColor="Good" /></TileContent>
+                    </GenericTile>
+                    <GenericTile class="leaveStatTile" header="Rejeitadas" subheader="Negadas" frameType="OneByHalf">
+                        <TileContent><NumericContent value="{leaveSummary>/rejected}" icon="sap-icon://decline" valueColor="Error" /></TileContent>
+                    </GenericTile>
+                </HBox>
+
+                <Panel headerText="Filtros" class="leavePanel">
                     <content>
-                        <VBox class="sapUiSmallMargin">
-                            <Label text="Funcionário" />
+                        <OverflowToolbar class="leaveToolbar">
                             <Select
                                 id="selectLeaveEmployee"
+                                width="22rem"
                                 forceSelection="false"
                                 selectedKey=""
                                 change="onEmployeeChange"
                                 enabled="{= ${session>/isAdmin} || ${session>/isHr} }"
                                 items="{employees>/}">
-                                <core:Item
-                                    key="{employees>id}"
-                                    text="{= ${employees>name} + ' - ' + ${employees>pernr} }" />
+                                <core:Item key="{employees>id}" text="{= ${employees>name} + ' - ' + ${employees>pernr} }" />
                             </Select>
 
-                            <Label text="Status" class="sapUiSmallMarginTop" />
                             <Select
                                 id="selectLeaveStatus"
+                                width="14rem"
                                 forceSelection="false"
                                 selectedKey=""
                                 change="onStatusFilterChange">
@@ -59,31 +70,36 @@
                                 <core:Item key="APPROVED" text="Aprovadas" />
                                 <core:Item key="REJECTED" text="Rejeitadas" />
                             </Select>
-                        </VBox>
+
+                            <ToolbarSpacer />
+                            <ObjectStatus text="{= ${leaveSummary>/filtered} + ' exibidas' }" state="Information" />
+                        </OverflowToolbar>
                     </content>
                 </Panel>
 
-                <Panel
-                    headerText="Solicitações registradas"
-                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                <Panel headerText="Solicitacoes registradas" class="leavePanel">
                     <content>
                         <List
-                            class="sapUiSmallMargin"
-                            noDataText="Nenhuma ausência encontrada."
+                            class="leaveList"
+                            noDataText="Nenhuma ausencia encontrada."
                             items="{leaveRequests>/}">
                             <items>
                                 <ObjectListItem
-                                    title="{= ${leaveRequests>type} + ' - ' + ${leaveRequests>employee/name} }"
-                                    intro="{= 'Período: ' + ${leaveRequests>startDate} + ' até ' + ${leaveRequests>endDate} }"
-                                    number="{leaveRequests>status}"
-                                    numberState="{= ${leaveRequests>status} === 'APPROVED' ? 'Success' : (${leaveRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }">
+                                    title="{path: 'leaveRequests>type', formatter: '.formatLeaveType'}"
+                                    intro="{= ${leaveRequests>employee/name} || 'Funcionario' }"
+                                    number="{path: 'leaveRequests>status', formatter: '.formatStatusText'}"
+                                    numberState="{path: 'leaveRequests>status', formatter: '.formatStatusState'}">
                                     <attributes>
+                                        <ObjectAttribute text="{= 'Periodo: ' + ${leaveRequests>startDate} + ' ate ' + ${leaveRequests>endDate} }" />
                                         <ObjectAttribute text="{= 'Motivo: ' + ${leaveRequests>reason} }" />
+                                        <ObjectAttribute visible="{= !!${leaveRequests>approvedBy} }" text="{= 'Aprovado por: ' + ${leaveRequests>approvedBy} }" />
+                                        <ObjectAttribute visible="{= !!${leaveRequests>rejectionReason} }" text="{= 'Justificativa: ' + ${leaveRequests>rejectionReason} }" />
                                     </attributes>
                                     <firstStatus>
                                         <ObjectStatus
-                                            text="{leaveRequests>status}"
-                                            state="{= ${leaveRequests>status} === 'APPROVED' ? 'Success' : (${leaveRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                            icon="{= ${leaveRequests>status} === 'APPROVED' ? 'sap-icon://accept' : (${leaveRequests>status} === 'REJECTED' ? 'sap-icon://decline' : 'sap-icon://pending') }"
+                                            text="{path: 'leaveRequests>status', formatter: '.formatStatusText'}"
+                                            state="{path: 'leaveRequests>status', formatter: '.formatStatusState'}" />
                                     </firstStatus>
                                 </ObjectListItem>
                             </items>

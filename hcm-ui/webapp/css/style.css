@@ -579,3 +579,105 @@
     }
 }
 
+.leavePage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.leaveContent {
+    margin: 1.5rem 2rem 2rem;
+    gap: 1rem;
+}
+
+.leaveTitle {
+    margin-bottom: 0.25rem;
+}
+
+.leaveStrip {
+    margin-bottom: 0.25rem;
+}
+
+.leaveStats {
+    gap: 0.75rem;
+}
+
+.leaveStatTile {
+    width: 13rem;
+    min-width: 13rem;
+}
+
+.leavePanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.leavePanel .sapMPanelContent {
+    padding: 0;
+}
+
+.leaveToolbar {
+    background: #ffffff;
+    border-bottom: 1px solid #d8e0e8;
+    padding: 0.75rem 1rem;
+}
+
+.leaveList {
+    padding: 0.5rem 1rem 1rem;
+}
+
+.leaveList .sapMLIB {
+    margin: 0.35rem 0;
+    border: 1px solid #d8e0e8;
+    border-left: 0.25rem solid #0a6ed1;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.06);
+}
+
+.leaveDecisionCard {
+    padding: 1rem;
+    gap: 0.75rem;
+}
+
+.leaveDecisionHeader {
+    gap: 1rem;
+}
+
+.leaveReasonText {
+    color: #52677a;
+}
+
+.leaveDecisionActions {
+    gap: 0.5rem;
+}
+
+.leaveDialogContent {
+    min-width: 24rem;
+}
+
+@media (max-width: 900px) {
+    .leaveContent {
+        margin: 1rem;
+    }
+
+    .leaveStatTile {
+        width: calc(50% - 0.5rem);
+        min-width: 11rem;
+    }
+
+    .leaveToolbar {
+        padding: 0.75rem;
+    }
+
+    .leaveToolbar .sapMSlt {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 560px) {
+    .leaveStatTile,
+    .leaveDialogContent {
+        width: 100%;
+        min-width: 0;
+    }
+}
+

@@ -6,85 +6,57 @@
 
     <Page
         id="pageManagerApprovals"
-        title="Aprovar Solicitações"
+        title="Aprovar Solicitacoes"
         showNavButton="true"
-        navButtonPress="onNavBack">
+        navButtonPress="onNavBack"
+        class="leavePage">
 
         <content>
-            <VBox class="sapUiMediumMargin">
-
-                <Title
-                    text="Aprovações do Gerente"
-                    level="H2"
-                    class="sapUiSmallMarginBottom" />
+            <VBox class="leaveContent">
+                <Title text="Aprovacoes da Equipe" level="H2" class="leaveTitle" />
 
                 <MessageStrip
-                    text="Consulte as solicitações pendentes da equipe e aprove ou rejeite cada solicitação."
+                    text="Analise solicitacoes pendentes da equipe e registre a decisao."
                     type="Information"
                     showIcon="true"
-                    class="sapUiSmallMarginBottom" />
+                    class="leaveStrip" />
 
-                <Panel headerText="Filtro do gerente">
+                <Panel headerText="Filtro" class="leavePanel">
                     <content>
-                        <VBox class="sapUiSmallMargin">
-                            <Label text="Gerente" />
+                        <OverflowToolbar class="leaveToolbar">
                             <Select
                                 id="selectManagerApproval"
+                                width="22rem"
                                 forceSelection="false"
                                 selectedKey=""
                                 change="onManagerChange"
                                 enabled="{= ${session>/isAdmin} }"
                                 items="{managers>/}">
-                                <core:Item
-                                    key="{managers>id}"
-                                    text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
+                                <core:Item key="{managers>id}" text="{= ${managers>name} + ' - ' + ${managers>pernr} }" />
                             </Select>
-                        </VBox>
+                            <ToolbarSpacer />
+                            <ObjectStatus text="{= ${approvalSummary>/pending} + ' pendentes' }" state="{= ${approvalSummary>/pending} > 0 ? 'Warning' : 'Success' }" />
+                        </OverflowToolbar>
                     </content>
                 </Panel>
 
-                <Panel
-                    headerText="Solicitações pendentes"
-                    class="sapUiMediumMarginTop sapUiMediumMarginBottom">
+                <Panel headerText="Solicitacoes pendentes" class="leavePanel">
                     <content>
-                        <List
-                            class="sapUiSmallMargin"
-                            noDataText="Nenhuma solicitação pendente encontrada."
-                            items="{pendingRequests>/}">
+                        <List class="leaveList" noDataText="Nenhuma solicitacao pendente encontrada." items="{pendingRequests>/}">
                             <items>
                                 <CustomListItem>
-                                    <VBox class="sapUiSmallMargin">
-                                        <HBox justifyContent="SpaceBetween" wrap="Wrap">
+                                    <VBox class="leaveDecisionCard">
+                                        <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap" class="leaveDecisionHeader">
                                             <VBox>
-                                                <Title
-                                                    text="{= ${pendingRequests>employee/name} + ' - ' + ${pendingRequests>type} }"
-                                                    level="H5" />
-                                                <Text text="{= 'Período: ' + ${pendingRequests>startDate} + ' até ' + ${pendingRequests>endDate} }" />
+                                                <Title text="{= ${pendingRequests>employee/name} + ' - ' + ${pendingRequests>type} }" level="H5" />
+                                                <Text text="{= 'Periodo: ' + ${pendingRequests>startDate} + ' ate ' + ${pendingRequests>endDate} }" />
                                             </VBox>
-
-                                            <ObjectStatus
-                                                text="{pendingRequests>status}"
-                                                state="{= ${pendingRequests>status} === 'APPROVED' ? 'Success' : (${pendingRequests>status} === 'REJECTED' ? 'Error' : 'Warning') }" />
+                                            <ObjectStatus text="Pendente" state="Warning" icon="sap-icon://pending" />
                                         </HBox>
-
-                                        <Text
-                                            text="{= 'Motivo: ' + ${pendingRequests>reason} }"
-                                            class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
-
-                                        <HBox wrap="Wrap">
-                                            <Button
-                                                text="Aprovar"
-                                                type="Accept"
-                                                icon="sap-icon://accept"
-                                                press="onApproveRequest"
-                                                class="sapUiTinyMarginEnd sapUiTinyMarginBottom" />
-
-                                            <Button
-                                                text="Rejeitar"
-                                                type="Reject"
-                                                icon="sap-icon://decline"
-                                                press="onRejectRequest"
-                                                class="sapUiTinyMarginBottom" />
+                                        <Text text="{= 'Motivo: ' + ${pendingRequests>reason} }" class="leaveReasonText" />
+                                        <HBox wrap="Wrap" class="leaveDecisionActions">
+                                            <Button text="Aprovar" type="Accept" icon="sap-icon://accept" press="onApproveRequest" />
+                                            <Button text="Rejeitar" type="Reject" icon="sap-icon://decline" press="onRejectRequest" />
                                         </HBox>
                                     </VBox>
                                 </CustomListItem>
@@ -92,7 +64,6 @@
                         </List>
                     </content>
                 </Panel>
-
             </VBox>
         </content>
     </Page>
