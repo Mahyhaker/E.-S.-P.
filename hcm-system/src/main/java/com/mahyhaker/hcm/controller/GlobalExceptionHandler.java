@@ -18,6 +18,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import com.mahyhaker.hcm.exception.NotFoundException;
 import com.mahyhaker.hcm.exception.UnauthorizedException;
 
+import jakarta.validation.ConstraintViolationException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -88,6 +90,28 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleDataIntegrity(DataIntegrityViolationException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Nao foi possivel concluir a operacao por conflito com dados existentes.");
+        return error;
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> error = new HashMap<>();
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(violation -> violation.getMessage())
+                .filter(text -> text != null && !text.isBlank())
+                .findFirst()
+                .orElse("Dados invalidos.");
+        error.put("message", message);
+        return error;
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleUnexpected(Exception ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "Erro interno do servidor.");
         return error;
     }
 }
