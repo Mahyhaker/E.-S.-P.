@@ -15,6 +15,7 @@ import com.mahyhaker.hcm.exception.UnauthorizedException;
 import com.mahyhaker.hcm.model.User;
 import com.mahyhaker.hcm.repository.UserRepository;
 import com.mahyhaker.hcm.service.JwtService;
+import com.mahyhaker.hcm.service.PersonalDataService;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,13 +24,16 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PersonalDataService personalDataService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
-                          JwtService jwtService) {
+                          JwtService jwtService,
+                          PersonalDataService personalDataService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.personalDataService = personalDataService;
     }
 
     @PostMapping("/login")
@@ -59,7 +63,8 @@ public class AuthController {
                 token,
                 user.getUsername(),
                 user.getRole().name(),
-                employeeId
+                employeeId,
+                personalDataService.requiresSetup(user)
         );
     }
 }

@@ -20,6 +20,7 @@
                 visible="{session>/isAdmin}" />
 
             <Button
+                id="accessEmployeeButton"
                 text="Acesso"
                 icon="sap-icon://key-user-settings"
                 press="onOpenAccessDialog"
@@ -27,6 +28,7 @@
                 visible="{session>/isAdmin}" />
 
             <Button
+                id="editEmployeeButton"
                 text="Editar"
                 icon="sap-icon://edit"
                 press="onOpenEditDialog"
@@ -34,6 +36,7 @@
                 visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
 
             <Button
+                id="detailEmployeeButton"
                 text="Detalhes"
                 icon="sap-icon://detail-view"
                 press="onOpenDetail"
@@ -41,6 +44,7 @@
                 visible="{= ${session>/isAdmin} || ${session>/isHr} }" />
 
             <Button
+                id="deleteEmployeeButton"
                 text="Deletar"
                 icon="sap-icon://delete"
                 type="Negative"

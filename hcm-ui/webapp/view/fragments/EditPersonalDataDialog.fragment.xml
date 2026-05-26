@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="editPersonalDataDialog"
+        title="Dados pessoais protegidos"
+        contentWidth="32rem">
+        <content>
+            <VBox class="sapUiMediumMargin employeeDialogContent">
+                <MessageStrip
+                    text="Campos visiveis apenas para usuarios do RH."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Label text="Nome completo" required="true" />
+                <Input id="personalFullName" placeholder="Nome completo conforme documento" />
+
+                <Label text="CPF" required="true" class="sapUiSmallMarginTop" />
+                <Input id="personalCpf" placeholder="000.000.000-00" maxLength="14" />
+
+                <Label text="RG" required="true" class="sapUiSmallMarginTop" />
+                <Input id="personalRg" placeholder="Numero do documento" maxLength="20" />
+
+                <Label text="Telefone" required="true" class="sapUiSmallMarginTop" />
+                <Input id="personalPhone" placeholder="(00) 00000-0000" maxLength="15" type="Tel" />
+            </VBox>
+        </content>
+        <beginButton>
+            <Button text="Salvar" icon="sap-icon://save" type="Emphasized" press="onSavePersonalData" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancelar" press="onClosePersonalDataDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

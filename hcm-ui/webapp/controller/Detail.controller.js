@@ -1,15 +1,18 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
+    "sap/ui/core/Fragment",
     "sap/ui/core/routing/History",
+    "sap/m/MessageToast",
     "sap/m/MessageBox"
-], function (Controller, JSONModel, History, MessageBox) {
+], function (Controller, JSONModel, Fragment, History, MessageToast, MessageBox) {
     "use strict";
 
     const BASE_URL = window.location.hostname === "localhost" && window.location.port && window.location.port !== "80" ? "http://localhost:8080" : "";
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.Detail", {
         onInit: function () {
+            this._oPersonalDataDialog = null;
             this.getView().setModel(new JSONModel(this._emptyProfile()), "detail");
 
             this.getOwnerComponent()
@@ -22,6 +25,7 @@ sap.ui.define([
             return {
                 busy: false,
                 employee: null,
+                personalData: null,
                 leaveRequests: [],
                 leaveSummary: {
                     total: 0,
@@ -82,21 +86,32 @@ sap.ui.define([
         loadProfile: async function (employeeId) {
             const oModel = this.getView().getModel("detail");
             const oHeaders = this._getAuthHeaders();
+            const bIsHr = this.getOwnerComponent().getModel("session").getProperty("/isHr");
             oModel.setProperty("/busy", true);
 
             try {
-                const [employeeResponse, leavesResponse] = await Promise.all([
+                const aRequests = [
                     fetch(`${BASE_URL}/employees/${employeeId}`, { headers: oHeaders }),
                     fetch(`${BASE_URL}/leave-requests/employee/${employeeId}`, { headers: oHeaders })
-                ]);
+                ];
 
-                if ([employeeResponse, leavesResponse].some(response => response.status === 401 || response.status === 403)) {
+                if (bIsHr) {
+                    aRequests.push(fetch(`${BASE_URL}/personal-data/employee/${employeeId}`, { headers: oHeaders }));
+                }
+
+                const responses = await Promise.all(aRequests);
+                const employeeResponse = responses[0];
+                const leavesResponse = responses[1];
+                const personalDataResponse = responses[2] || null;
+
+                if (responses.some(response => response.status === 401 || response.status === 403)) {
                     this._handleUnauthorized();
                     throw new Error("Sessao expirada ou acesso negado.");
                 }
 
                 const employee = await this._safeReadJson(employeeResponse);
                 const leaveRequests = await this._safeReadJson(leavesResponse) || [];
+                const personalData = personalDataResponse ? await this._safeReadJson(personalDataResponse) : null;
 
                 if (!employeeResponse.ok) {
                     throw new Error((employee && employee.message) || "Erro ao buscar perfil do funcionario.");
@@ -106,9 +121,14 @@ sap.ui.define([
                     throw new Error((leaveRequests && leaveRequests.message) || "Erro ao buscar ausencias do funcionario.");
                 }
 
+                if (personalDataResponse && !personalDataResponse.ok) {
+                    throw new Error((personalData && personalData.message) || "Erro ao buscar dados pessoais.");
+                }
+
                 oModel.setData({
                     busy: false,
                     employee,
+                    personalData,
                     leaveRequests,
                     leaveSummary: this._buildLeaveSummary(leaveRequests),
                     latestLeaveRequests: this._latestLeaveRequests(leaveRequests)
@@ -116,6 +136,67 @@ sap.ui.define([
             } catch (error) {
                 oModel.setProperty("/busy", false);
                 console.error("Erro ao buscar perfil:", error);
+                MessageBox.error(error.message);
+            }
+        },
+
+        onOpenPersonalDataDialog: async function () {
+            const oData = this.getView().getModel("detail").getProperty("/personalData") || {};
+
+            if (!this._oPersonalDataDialog) {
+                const oDialog = await Fragment.load({
+                    id: this.getView().getId(),
+                    name: "com.mahyhaker.hcmui.hcmui.view.fragments.EditPersonalDataDialog",
+                    controller: this
+                });
+
+                this._oPersonalDataDialog = oDialog;
+                this.getView().addDependent(this._oPersonalDataDialog);
+            }
+
+            this.byId("personalFullName").setValue(oData.fullName || "");
+            this.byId("personalCpf").setValue(oData.cpf || "");
+            this.byId("personalRg").setValue(oData.rg || "");
+            this.byId("personalPhone").setValue(oData.phone || "");
+            this._oPersonalDataDialog.open();
+        },
+
+        onClosePersonalDataDialog: function () {
+            if (this._oPersonalDataDialog) {
+                this._oPersonalDataDialog.close();
+            }
+        },
+
+        onSavePersonalData: async function () {
+            const employeeId = this.getView().getModel("detail").getProperty("/employee/id");
+            const payload = {
+                fullName: this.byId("personalFullName").getValue().trim(),
+                cpf: this.byId("personalCpf").getValue().trim(),
+                rg: this.byId("personalRg").getValue().trim(),
+                phone: this.byId("personalPhone").getValue().trim()
+            };
+
+            if (!payload.fullName || !payload.cpf || !payload.rg || !payload.phone) {
+                MessageBox.error("Preencha todos os campos obrigatorios.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/personal-data/employee/${employeeId}`, {
+                    method: "PUT",
+                    headers: this._getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await this._safeReadJson(response);
+
+                if (!response.ok) {
+                    throw new Error((data && data.message) || "Erro ao salvar dados pessoais.");
+                }
+
+                this.getView().getModel("detail").setProperty("/personalData", data);
+                this.onClosePersonalDataDialog();
+                MessageToast.show("Dados pessoais atualizados.");
+            } catch (error) {
                 MessageBox.error(error.message);
             }
         },

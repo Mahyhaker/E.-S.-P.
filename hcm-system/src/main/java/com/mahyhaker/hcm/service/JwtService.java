@@ -1,23 +1,33 @@
 package com.mahyhaker.hcm.service;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "1234567890123456789012345678901212345678901234567890123456789012";
+    private final Key signInKey;
+
+    public JwtService(@Value("${app.jwt.secret}") String secretKey) {
+        if (secretKey == null
+                || secretKey.startsWith("change-this")
+                || secretKey.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("Configure JWT_SECRET com pelo menos 32 caracteres.");
+        }
+
+        this.signInKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
@@ -33,7 +43,7 @@ public class JwtService {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .signWith(signInKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -48,16 +58,10 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSignInKey())
+                .setSigningKey(signInKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(
-                java.util.Base64.getEncoder().encodeToString(SECRET_KEY.getBytes())
-        );
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
 }

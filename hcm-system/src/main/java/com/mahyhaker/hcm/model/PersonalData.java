@@ -1,7 +1,9 @@
 package com.mahyhaker.hcm.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +26,19 @@ public class PersonalData {
     private String maritalStatus;
 
     private String nationality;
+
+    private String fullName;
+
+    @Column(unique = true, length = 11)
+    private String cpf;
+
+    private String rg;
+
+    private String phone;
+
+    private LocalDateTime updatedAt;
+
+    private String updatedBy;
 
     @OneToOne
     @JoinColumn(name = "employee_id")
@@ -73,6 +88,54 @@ public class PersonalData {
 
     public void setNationality(String nationality) {
         this.nationality = nationality;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public String getRg() {
+        return rg;
+    }
+
+    public void setRg(String rg) {
+        this.rg = rg;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public Employee getEmployee() {

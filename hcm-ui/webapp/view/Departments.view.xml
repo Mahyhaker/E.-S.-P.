@@ -19,6 +19,7 @@
                 visible="{session>/isAdmin}" />
 
             <Button
+                id="deleteDepartmentButton"
                 text="Deletar"
                 icon="sap-icon://delete"
                 type="Negative"

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mahyhaker.hcm.dto.CreateEmployeeWithUserRequest;
 import com.mahyhaker.hcm.dto.EmployeeTreeNode;
@@ -21,6 +22,8 @@ import com.mahyhaker.hcm.model.User;
 import com.mahyhaker.hcm.repository.DepartmentRepository;
 import com.mahyhaker.hcm.repository.EmployeeRepository;
 import com.mahyhaker.hcm.repository.LeaveRequestRepository;
+import com.mahyhaker.hcm.repository.OrganizationalAssignmentRepository;
+import com.mahyhaker.hcm.repository.PersonalDataRepository;
 import com.mahyhaker.hcm.repository.UserRepository;
 
 @Service
@@ -31,17 +34,23 @@ public class EmployeeService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final PersonalDataRepository personalDataRepository;
+    private final OrganizationalAssignmentRepository organizationalAssignmentRepository;
 
     public EmployeeService(EmployeeRepository employeeRepository,
                            DepartmentRepository departmentRepository,
                            UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           LeaveRequestRepository leaveRequestRepository) {
+                           LeaveRequestRepository leaveRequestRepository,
+                           PersonalDataRepository personalDataRepository,
+                           OrganizationalAssignmentRepository organizationalAssignmentRepository) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.leaveRequestRepository = leaveRequestRepository;
+        this.personalDataRepository = personalDataRepository;
+        this.organizationalAssignmentRepository = organizationalAssignmentRepository;
     }
 
     public EmployeeWithUserResponse createEmployeeWithUser(CreateEmployeeWithUserRequest request) {
@@ -147,6 +156,7 @@ public class EmployeeService {
         throw new AccessDeniedException("Acesso negado.");
     }
 
+    @Transactional
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Funcionario nao encontrado."));
@@ -161,7 +171,14 @@ public class EmployeeService {
             employeeRepository.save(subordinate);
         }
 
+        organizationalAssignmentRepository.findByManagerId(id).forEach(assignment -> {
+            assignment.setManager(null);
+            organizationalAssignmentRepository.save(assignment);
+        });
+
         userRepository.findByEmployeeId(id).ifPresent(userRepository::delete);
+        personalDataRepository.deleteByEmployeeId(id);
+        organizationalAssignmentRepository.deleteByEmployeeId(id);
 
         List<LeaveRequest> leaveRequests = leaveRequestRepository.findAll()
                 .stream()

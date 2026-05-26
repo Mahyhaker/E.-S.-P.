@@ -7,8 +7,14 @@
         contentWidth="32rem">
         <content>
             <VBox class="sapUiMediumMargin employeeDialogContent">
-                <Label text="Nome" />
-                <Input id="inputName" placeholder="Nome completo" />
+                <MessageStrip
+                    text="Crie o acesso e o vinculo operacional. Dados documentais serao mantidos pelo RH."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+
+                <Label text="Nome de exibicao" />
+                <Input id="inputName" placeholder="Nome usado no sistema" />
 
                 <Label text="Cargo" class="sapUiSmallMarginTop" />
                 <Input id="inputPosition" placeholder="Ex.: Desenvolvedor, Analista, Gerente" />

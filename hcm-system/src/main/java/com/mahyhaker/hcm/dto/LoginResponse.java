@@ -6,15 +6,17 @@ public class LoginResponse {
     private String username;
     private String role;
     private Long employeeId;
+    private boolean requiresPersonalDataSetup;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(String token, String username, String role, Long employeeId) {
+    public LoginResponse(String token, String username, String role, Long employeeId, boolean requiresPersonalDataSetup) {
         this.token = token;
         this.username = username;
         this.role = role;
         this.employeeId = employeeId;
+        this.requiresPersonalDataSetup = requiresPersonalDataSetup;
     }
 
     public String getToken() {
@@ -31,5 +33,9 @@ public class LoginResponse {
 
     public Long getEmployeeId() {
         return employeeId;
+    }
+
+    public boolean isRequiresPersonalDataSetup() {
+        return requiresPersonalDataSetup;
     }
 }

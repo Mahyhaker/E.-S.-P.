@@ -5,7 +5,12 @@ sap.ui.define([
 
     return Controller.extend("com.mahyhaker.hcmui.hcmui.controller.App", {
         onGoHome: function () {
-            this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
+            const oSession = this.getOwnerComponent().getModel("session");
+            this.getOwnerComponent().getRouter().navTo(
+                oSession.getProperty("/requiresPersonalDataSetup") ? "RouteHrProfileSetup" : "RouteDashboard",
+                {},
+                true
+            );
         },
 
         onLogout: function () {

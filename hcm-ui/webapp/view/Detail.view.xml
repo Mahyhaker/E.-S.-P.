@@ -11,6 +11,15 @@
         busy="{detail>/busy}"
         class="employeeProfilePage">
 
+        <headerContent>
+            <Button
+                text="Dados pessoais"
+                icon="sap-icon://edit"
+                type="Emphasized"
+                press="onOpenPersonalDataDialog"
+                visible="{session>/isHr}" />
+        </headerContent>
+
         <content>
             <VBox class="employeeProfileContent">
 
@@ -106,6 +115,27 @@
                         </content>
                     </Panel>
                 </HBox>
+
+                <Panel
+                    headerText="Dados pessoais protegidos"
+                    visible="{session>/isHr}"
+                    class="employeeProfilePanel">
+                    <content>
+                        <MessageStrip
+                            text="Acesso restrito ao RH. Utilize estes dados somente para finalidades de gestao de pessoas."
+                            type="Information"
+                            showIcon="true"
+                            class="sapUiSmallMarginBottom" />
+                        <List noDataText="Dados pessoais ainda nao preenchidos.">
+                            <items>
+                                <ObjectListItem title="Nome completo" intro="{= ${detail>/personalData/fullName} || 'Nao preenchido' }" />
+                                <ObjectListItem title="CPF" intro="{= ${detail>/personalData/cpf} || 'Nao preenchido' }" />
+                                <ObjectListItem title="RG" intro="{= ${detail>/personalData/rg} || 'Nao preenchido' }" />
+                                <ObjectListItem title="Telefone" intro="{= ${detail>/personalData/phone} || 'Nao preenchido' }" />
+                            </items>
+                        </List>
+                    </content>
+                </Panel>
 
                 <Panel headerText="Ultimas solicitacoes de ausencia" class="employeeProfilePanel">
                     <content>

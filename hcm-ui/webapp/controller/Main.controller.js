@@ -210,6 +210,10 @@ sap.ui.define([
                 this._allEmployees.some(other => other.manager && other.manager.id === emp.id)
             ).length);
             oModel.setProperty("/selectedEmployee", null);
+            const oEmployeeList = this.byId("employeeList");
+            if (oEmployeeList) {
+                oEmployeeList.removeSelections(true);
+            }
             oModel.setProperty(
                 "/noDataText",
                 sSearch || sDepartmentId || this._dashboardFilter

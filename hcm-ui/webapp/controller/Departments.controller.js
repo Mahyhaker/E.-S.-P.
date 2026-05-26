@@ -125,6 +125,11 @@ sap.ui.define([
                     selectedDepartment: null,
                     noDataText: "Nenhum departamento cadastrado."
                 });
+
+                const oDepartmentList = this.byId("departmentList");
+                if (oDepartmentList) {
+                    oDepartmentList.removeSelections(true);
+                }
             } catch (error) {
                 console.error("Erro ao buscar departamentos:", error);
                 MessageBox.error(error.message);
@@ -165,6 +170,10 @@ sap.ui.define([
             oModel.setProperty("/search", sQuery);
             oModel.setProperty("/filteredItems", aFiltered);
             oModel.setProperty("/selectedDepartment", null);
+            const oDepartmentList = this.byId("departmentList");
+            if (oDepartmentList) {
+                oDepartmentList.removeSelections(true);
+            }
             oModel.setProperty(
                 "/noDataText",
                 sQuery ? "Nenhum departamento encontrado para esta busca." : "Nenhum departamento cadastrado."

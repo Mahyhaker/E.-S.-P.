@@ -105,7 +105,8 @@ Pode:
 Pode:
 
 * Gerenciar funcionários
-* Editar dados
+* Editar dados pessoais protegidos (nome completo, CPF, RG e telefone)
+* Concluir os proprios dados pessoais no primeiro acesso
 * Criar departamentos
 * Visualizar dashboard
 * Visualizar organograma
@@ -281,9 +282,11 @@ Ao iniciar o sistema, um usuário administrador é criado automaticamente.
 
 ```text
 username: admin
-password: 123
+password: valor configurado em APP_ADMIN_INITIAL_PASSWORD
 role: ADMIN
 ```
+
+A senha inicial e o segredo dos tokens nao ficam no codigo. Configure `APP_ADMIN_INITIAL_PASSWORD` e `JWT_SECRET` no arquivo `.env` antes de iniciar um ambiente novo.
 
 ---
 
@@ -308,6 +311,10 @@ Edite o arquivo `.env` e troque a senha do PostgreSQL:
 POSTGRES_DB=hcm_db
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=sua_senha_forte
+
+APP_ADMIN_USERNAME=admin
+APP_ADMIN_INITIAL_PASSWORD=sua_senha_admin_forte
+JWT_SECRET=uma_chave_longa_e_secreta_com_pelo_menos_32_caracteres
 
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SPRING_JPA_SHOW_SQL=false
@@ -466,6 +473,8 @@ O sistema utiliza:
 * Controle de acesso por role
 * Proteção de endpoints
 * Variáveis de ambiente para configurações sensíveis em Docker/EC2
+* Dados pessoais acessiveis somente pelo RH
+* Cadastro inicial obrigatorio para usuarios do RH
 
 O arquivo `.env` não deve ser versionado. Use `.env.example` como modelo.
 

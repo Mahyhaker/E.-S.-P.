@@ -23,6 +23,7 @@ sap.ui.define([
                 isHr: false,
                 isManager: false,
                 isEmployee: false,
+                requiresPersonalDataSetup: false,
                 isAuthenticated: false
             };
 
@@ -38,11 +39,13 @@ sap.ui.define([
                     isHr: !!oParsed.isHr,
                     isManager: !!oParsed.isManager,
                     isEmployee: !!oParsed.isEmployee,
+                    requiresPersonalDataSetup: !!oParsed.requiresPersonalDataSetup,
                     isAuthenticated: !!oParsed.token
                 };
             }
 
             this.setModel(new JSONModel(oSessionData), "session");
+            this.getRouter().attachRouteMatched(this._enforceHrProfileSetup, this);
             this.getRouter().initialize();
         },
 
@@ -56,8 +59,30 @@ sap.ui.define([
                 isHr: !!oSessionData.isHr,
                 isManager: !!oSessionData.isManager,
                 isEmployee: !!oSessionData.isEmployee,
+                requiresPersonalDataSetup: !!oSessionData.requiresPersonalDataSetup,
                 isAuthenticated: !!oSessionData.token
             });
+        },
+
+        completePersonalDataSetup: function () {
+            const oModel = this.getModel("session");
+            const oData = oModel.getData();
+            oData.requiresPersonalDataSetup = false;
+            oModel.setData(oData);
+            localStorage.setItem("hcmSession", JSON.stringify(oData));
+        },
+
+        _enforceHrProfileSetup: function (oEvent) {
+            const oSession = this.getModel("session");
+            const sRouteName = oEvent.getParameter("name");
+
+            if (oSession.getProperty("/isAuthenticated")
+                    && oSession.getProperty("/isHr")
+                    && oSession.getProperty("/requiresPersonalDataSetup")
+                    && sRouteName !== "RouteHrProfileSetup"
+                    && sRouteName !== "RouteLogin") {
+                this.getRouter().navTo("RouteHrProfileSetup", {}, true);
+            }
         },
 
         clearSession: function () {
@@ -72,6 +97,7 @@ sap.ui.define([
                 isHr: false,
                 isManager: false,
                 isEmployee: false,
+                requiresPersonalDataSetup: false,
                 isAuthenticated: false
             });
         }

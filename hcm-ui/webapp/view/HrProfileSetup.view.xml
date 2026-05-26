@@ -1,0 +1,58 @@
+<mvc:View
+    controllerName="com.mahyhaker.hcmui.hcmui.controller.HrProfileSetup"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form">
+
+    <Page
+        id="pageHrProfileSetup"
+        title="Cadastro Inicial do RH"
+        busy="{personalData>/busy}"
+        class="hrSetupPage">
+
+        <content>
+            <VBox class="hrSetupContent">
+                <Title text="Complete seu cadastro" level="H2" />
+
+                <MessageStrip
+                    text="Antes de acessar o sistema, confirme seus dados pessoais obrigatorios."
+                    type="Information"
+                    showIcon="true" />
+
+                <Panel headerText="Dados pessoais" class="hrSetupPanel">
+                    <content>
+                        <f:SimpleForm
+                            editable="true"
+                            layout="ResponsiveGridLayout"
+                            labelSpanXL="3"
+                            labelSpanL="3"
+                            labelSpanM="4"
+                            columnsXL="1"
+                            columnsL="1"
+                            columnsM="1">
+                            <Label text="Nome completo" required="true" />
+                            <Input value="{personalData>/fullName}" placeholder="Nome completo conforme documento" />
+
+                            <Label text="CPF" required="true" />
+                            <Input value="{personalData>/cpf}" placeholder="000.000.000-00" maxLength="14" />
+
+                            <Label text="RG" required="true" />
+                            <Input value="{personalData>/rg}" placeholder="Numero do documento" maxLength="20" />
+
+                            <Label text="Telefone" required="true" />
+                            <Input value="{personalData>/phone}" placeholder="(00) 00000-0000" maxLength="15" type="Tel" />
+                        </f:SimpleForm>
+                    </content>
+                </Panel>
+
+                <HBox justifyContent="End" class="hrSetupActions">
+                    <Button
+                        text="Salvar e continuar"
+                        icon="sap-icon://accept"
+                        type="Emphasized"
+                        press="onSave" />
+                </HBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

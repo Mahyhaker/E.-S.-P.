@@ -55,12 +55,14 @@
 
                                     <Label text="Usuário" />
                                     <Input
+                                        id="loginUsernameInput"
                                         value="{login>/username}"
                                         placeholder="Digite seu usuário"
                                         submit="onLogin" />
 
                                     <Label text="Senha" />
                                     <Input
+                                        id="loginPasswordInput"
                                         value="{login>/password}"
                                         type="Password"
                                         placeholder="Digite sua senha"
@@ -68,6 +70,7 @@
                                 </f:SimpleForm>
 
                                 <Button
+                                    id="loginButton"
                                     text="Entrar"
                                     type="Emphasized"
                                     press="onLogin"

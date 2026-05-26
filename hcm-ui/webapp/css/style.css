@@ -551,6 +551,30 @@
     overflow-x: hidden;
 }
 
+.hrSetupPage .sapMPageEnableScrolling {
+    background: #f4f6f8;
+}
+
+.hrSetupContent {
+    max-width: 48rem;
+    margin: 2rem auto;
+    gap: 1rem;
+    padding: 0 1rem;
+}
+
+.hrSetupPanel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.hrSetupPanel .sapMPanelContent {
+    padding: 1rem;
+}
+
+.hrSetupActions {
+    gap: 0.5rem;
+}
+
 @media (max-width: 900px) {
     .employeeProfileContent {
         margin: 1rem;

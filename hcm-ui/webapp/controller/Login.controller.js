@@ -57,12 +57,17 @@ sap.ui.define([
                         isAdmin: data.role === "ADMIN",
                         isHr: data.role === "HR",
                         isManager: data.role === "MANAGER",
-                        isEmployee: data.role === "EMPLOYEE"
+                        isEmployee: data.role === "EMPLOYEE",
+                        requiresPersonalDataSetup: !!data.requiresPersonalDataSetup
                     };
 
                     localStorage.setItem("hcmSession", JSON.stringify(oSessionData));
                     this.getOwnerComponent().setSession(oSessionData);
-                    this.getOwnerComponent().getRouter().navTo("RouteDashboard", {}, true);
+                    this.getOwnerComponent().getRouter().navTo(
+                        oSessionData.requiresPersonalDataSetup ? "RouteHrProfileSetup" : "RouteDashboard",
+                        {},
+                        true
+                    );
                 })
                 .catch((error) => {
                     MessageBox.error(error.message);
